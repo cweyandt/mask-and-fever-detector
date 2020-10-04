@@ -7,13 +7,11 @@ gst-launch-1.0 nvarguscamerasrc sensor_mode=0 ! 'video/x-raw(memory:NVMM),width=
 ```
  
 Enabling access from within a container:
-```
-sudo docker run --net=host --runtime nvidia --rm --ipc=host -v /tmp/.X11-unix/:/tmp/.X11-unix/ -v /tmp/argus_socket:/tmp/argus_socket --cap-add SYS_PTRACE -e DISPLAY=$DISPLAY -it nvcr.io/nvidia/l4t-base:r32.2.1
-```
+`sudo docker run --net=host --runtime nvidia --rm --ipc=host -v /tmp/.X11-unix/:/tmp/.X11-unix/ -v /tmp/argus_socket:/tmp/argus_socket --cap-add SYS_PTRACE -e DISPLAY=$DISPLAY -it nvcr.io/nvidia/l4t-base:r32.2.1`
 
 
 
-#Links
+# Links
  - <https://www.hackster.io/pjdecarlo/custom-object-detection-with-csi-ir-camera-on-nvidia-jetson-c6d315>
  - <https://www.jetsonhacks.com/2019/04/02/jetson-nano-raspberry-pi-camera/>
  
