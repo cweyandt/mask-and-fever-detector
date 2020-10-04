@@ -32,5 +32,6 @@ xhost +
 docker-compose up
 ```
 
+![image](imgs/jetson.png)
 ## Note 
 Wait 15 seconds after pressing "start" button. -- this will be fixed.
