@@ -1,4 +1,4 @@
-# Introduction (소개)
+# Introduction 
 This repo contains an implementation of real-time fask mask detector in tensorflow and opencv. 
 
 ![Imgur](imgs/out.gif)
@@ -16,17 +16,6 @@ is trained with the mask dataset from (this repo)[https://github.com/X-zhangyang
 
 Here is a link to the youtube video showing the performance of this detection module:
 (link)[https://www.youtube.com/watch?v=FIdzdLvgtT0]
-
-# How to run (사용방법)
-
-## 1. Install dependencies
-```
-pip install -r requirements.txt
-```
-## 2. Run the realtime mask detector
-```
-python maskDetector.py
-```
 
 # Note
 Models are stored using `git lfs(large file support)` extension. You need to use git lfs to download model files. Please read this documentation for more support. https://git-lfs.github.com/
