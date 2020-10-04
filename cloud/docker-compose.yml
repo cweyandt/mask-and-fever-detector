@@ -1,0 +1,20 @@
+---
+version: '2'
+
+services:
+        mosquitto_cloud:
+                build: ./mosquitto
+                expose:
+                        - "1883" #mqtt
+                ports:
+                        - "1883:1883"
+
+        processor:
+                build: ./processor
+                stdin_open: true
+                tty: true
+                depends_on: 
+                        - mosquitto_cloud
+                volumes:
+                        - /:/cloud
+
