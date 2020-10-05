@@ -1,0 +1,33 @@
+# Base image
+FROM nvcr.io/nvidia/l4t-ml:r32.4.3-py3
+
+# install packages
+RUN apt update && apt install -y libffi-dev python3-pip curl unzip python3-tk libopencv-dev python3-opencv python3-pyqt5 ffmpeg  
+RUN apt install -y build-essential cmake unzip pkg-config libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libatlas-base-dev gfortran python3-dev
+RUN pip3 install -U gsutil pyyaml tqdm   
+
+RUN apt install -y python3-scipy python3-matplotlib python3-numpy python3-pyqt5
+RUN apt install -y mosquitto-clients
+
+# Compile the latest opencv
+RUN mkdir -p /usr/src/opencv
+WORKDIR /usr/src/opencv
+RUN git clone https://github.com/opencv/opencv.git
+RUN git clone https://github.com/opencv/opencv_contrib.git 
+RUN mkdir opencv-build
+WORKDIR /usr/src/opencv/opencv-build
+RUN cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D INSTALL_PYTHON_EXAMPLES=ON -D INSTALL_C_EXAMPLES=OFF -D OPENCV_EXTRA_MODULES_PATH=/usr/src/opencv/opencv_contrib/modules -D PYTHON_EXECUTABLE=/usr/bin/python3 -D BUILD_EXAMPLES=ON -D WITH_CUDA=ON -D WITH_CUDNN=ON -D OPENCV_DNN_CUDA=ON -D ENABLE_FAST_MATH=1 -D CUDA_ARCH_BIN=7.2 -D WITH_CUBLAS=1 ../opencv
+RUN make -j 5
+RUN make install
+RUN ldconfig
+
+# # Create working directory
+# RUN mkdir -p /usr/src/app
+
+# # Copy contents
+# COPY . /usr/src/app
+# WORKDIR /usr/src/app/
+
+# # install the other python packages
+# RUN pip3 install -r requirements.txt
+# CMD ["python3", "maskDetector.py"]
