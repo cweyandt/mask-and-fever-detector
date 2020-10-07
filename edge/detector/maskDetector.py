@@ -34,7 +34,7 @@ flags.DEFINE_string(
 
 flags.DEFINE_string(
     "mask_net_model",
-    "model/CASIA_RMFD_LFW_PY_MOBILENETv2.02-0.0014.hdf5",
+    "model/mask_detector.model",
     "location of mask detection model",
 )
 
@@ -42,7 +42,7 @@ flags.DEFINE_string(
 class QtCapture(QWidget):
     """Custom GUI for capturing video, performing facial point detections and displaying the results in the video"""
 
-    def __init__(self, mainwindow, fps=60):
+    def __init__(self, mainwindow, fps=30):
         super(QWidget, self).__init__()
 
         self._mainwindow = mainwindow
@@ -223,7 +223,7 @@ class QtCapture(QWidget):
 
         if not ret:
             self.stop()
-        # (1) process fram
+        # (1) process frame
         self.face_detection_fn(frame)
 
         color = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -300,13 +300,13 @@ class MaskDetector(QtWidgets.QMainWindow):
 
         self._ui.menu_File.triggered.connect(self.closeEvent)
         self._ui.menu_About.triggered.connect(self.showAboutDialog)
-        self._ui.pushButton_browse.clicked.connect(self.browseModel)
+        #self._ui.pushButton_browse.clicked.connect(self.browseModel)
 
     def showAboutDialog(self):
         """show dialog"""
         msgBox = QMessageBox.about(
             self,
-            "About Dr. Tensorflow Mask Detector",
+            "About W251 Final Project Mask Detector",
             "Realtime mask detector using yoloface & mobilenet",
         )
 

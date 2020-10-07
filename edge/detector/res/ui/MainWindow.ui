@@ -23,50 +23,7 @@
       <height>42</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Model filename:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QTextEdit" name="textEdit_filename">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>30</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_browse">
-       <property name="maximumSize">
-        <size>
-         <width>16777215</width>
-         <height>30</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Browse</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <layout class="QHBoxLayout" name="horizontalLayout"/>
    </widget>
    <widget class="QWidget" name="horizontalLayoutWidget_2">
     <property name="geometry">
@@ -81,14 +38,14 @@
      <item>
       <widget class="QPushButton" name="pushButton_StartCapture">
        <property name="text">
-        <string>시작</string>
+        <string>Start</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="pushButton_StopCapture">
        <property name="text">
-        <string>중지</string>
+        <string>Stop</string>
        </property>
       </widget>
      </item>
@@ -98,7 +55,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>90</y>
+      <y>70</y>
       <width>691</width>
       <height>431</height>
      </rect>
@@ -148,7 +105,7 @@
         </font>
        </property>
        <property name="text">
-        <string>샌프란샘박사AI - SanFranDisco: 실시간 코로나 마스크 감지기</string>
+        <string>W251 Final Project - Mask Detector</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
