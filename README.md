@@ -1,5 +1,8 @@
 # Covid-19 Temperature/Mask Detection
 
+Combine mask detector, temperature measurement, and social distancing evaluation on Jetson Xavier NX
+
+
 ## Prerequisites
 - A jetson Xavier device with key based SSH access as local user
 - An AWS account with CLI credentials configured
