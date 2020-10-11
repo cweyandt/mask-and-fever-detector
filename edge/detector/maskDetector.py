@@ -330,5 +330,9 @@ def main(argv):
     sys.exit(qt_app.exec())
 
 
-if __name__ == "__main__":
+def run():
     app.run(main)
+
+
+if __name__ == "__main__":
+    run()

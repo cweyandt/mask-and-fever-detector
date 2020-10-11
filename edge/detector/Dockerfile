@@ -18,4 +18,4 @@ RUN pip3 install -r requirements.txt
 
 # Copy source code
 COPY . .
-CMD ["python3", "maskDetector.py"]
+CMD ["./main.py", "maskDetector"]
