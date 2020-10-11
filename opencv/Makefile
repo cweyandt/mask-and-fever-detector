@@ -1,6 +1,9 @@
 .ONESHELL:
 .PHONY: deps download build clean
 
+# CPU architecture
+
+
 # OpenCV version to use.
 OPENCV_VERSION?=4.4.0
 
@@ -130,10 +133,20 @@ sudo_pre_install_clean:
 	$(SUDO) rm -rf /usr/local/include/opencv*
 
 # Do everything.
-install: deps download sudo_pre_install_clean build sudo_install clean
+install:
+ifeq ($(ARCH),aarch64)
+	echo running cuda install
+	$(MAKE) install_cuda
+else
+	echo running x86 install
+	$(MAKE) install_x86
+endif
 
 # Do everything with cuda.
 install_cuda: deps download sudo_pre_install_clean build_cuda sudo_install clean
+
+# CPU install
+install_x86: deps download sudo_pre_install_clean build_cuda sudo_install clean
 
 # Install system wide.
 sudo_install:

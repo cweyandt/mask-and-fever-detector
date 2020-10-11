@@ -3,3 +3,6 @@ FROM nvcr.io/nvidia/l4t-ml:r32.4.3-py3
 
 COPY Makefile .
 RUN make install_cuda
+
+RUN pip3 install scikit-build 
+RUN pip3 install opencv-python
