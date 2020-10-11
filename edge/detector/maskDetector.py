@@ -1,3 +1,4 @@
+import os
 import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QMessageBox, QFileDialog
@@ -8,6 +9,9 @@ from tensorflow.keras.models import load_model
 from absl import app
 from absl import flags
 from utils import *
+
+# Get CAMERA_INDEX from environment, default to 0
+CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", 0))
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool("use_yoloface", False, "Use yoloface for face detection")
@@ -33,9 +37,7 @@ flags.DEFINE_string(
 )
 
 flags.DEFINE_string(
-    "mask_net_model",
-    "model/mask_detector.model",
-    "location of mask detection model",
+    "mask_net_model", "model/mask_detector.model", "location of mask detection model",
 )
 
 
@@ -238,7 +240,7 @@ class QtCapture(QWidget):
         """Start capturing data by setting up timer"""
         if not self._model_loaded:
             self.loadResources()
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.timer = QTimer()
         self.timer.timeout.connect(self.nextFrameSlot)
         self.timer.start(1000.0 / self._fps)
@@ -300,7 +302,7 @@ class MaskDetector(QtWidgets.QMainWindow):
 
         self._ui.menu_File.triggered.connect(self.closeEvent)
         self._ui.menu_About.triggered.connect(self.showAboutDialog)
-        #self._ui.pushButton_browse.clicked.connect(self.browseModel)
+        # self._ui.pushButton_browse.clicked.connect(self.browseModel)
 
     def showAboutDialog(self):
         """show dialog"""
