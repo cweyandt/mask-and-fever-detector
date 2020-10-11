@@ -2,7 +2,7 @@
 .PHONY: deps download build clean
 
 # CPU architecture
-
+ARCH = $(shell uname -m)
 
 # OpenCV version to use.
 OPENCV_VERSION?=4.4.0
