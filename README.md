@@ -8,10 +8,12 @@ Combine mask detector, temperature measurement, and social distancing evaluation
 - An AWS account with CLI credentials configured
 
 **Software Dependencies:**
-- terraform
-- python 3
-- make
 - docker
+- jq
+- make
+- python3
+- python3-venv
+- terraform
 
 ## Building Images
 
