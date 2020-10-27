@@ -12,7 +12,7 @@
   roles:
     - {role: python_docker, tags: [start]}
 
-- hosts: image-servers
+- hosts: image_servers
   gather_facts: False
   become: True
   pre_tasks:
@@ -23,7 +23,7 @@
   roles:
     - {role: image_server, tags: [start]}
 
-- hosts: edge-devices
+- hosts: edge_devices
   gather_facts: False
   pre_tasks:
     - include_vars:

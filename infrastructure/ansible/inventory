@@ -1,5 +1,5 @@
-[edge-devices]
-10.0.0.20 ansible_python_interpreter=/usr/bin/python3
+[edge_devices]
+192.168.0.37 ansible_ssh_user=chris ansible_python_interpreter=/usr/bin/python3
 
-[image-servers]
-34.220.94.64 ansible_ssh_user=ubuntu ansible_python_interpreter=/usr/bin/python3
+[image_servers]
+100.20.65.3 ansible_ssh_user=ubuntu ansible_python_interpreter=/usr/bin/python3

@@ -87,13 +87,15 @@ cloud-down-all:
 .PHONY: ansible-inventory
 ansible-inventory:
 	sed -e "s/IMAGE_SERVER/$$(jq -r '.outputs.image_server_public_ip.value' < infrastructure/terraform/terraform.tfstate)/" \
-		-e "s/EDGE_SERVER/$(EDGE_SERVER)/" infrastructure/ansible/inventory.tmpl > infrastructure/ansible/inventory
+		-e "s/EDGE_SERVER/$(EDGE_SERVER)/" \
+		-e "s/EDGE_USER/$(EDGE_USER)/" \
+		infrastructure/ansible/inventory.tmpl > infrastructure/ansible/inventory
 
 .PHONY: config-up
 config-up: $(VENV) ansible-inventory
 	source $(VENV)/bin/activate && \
 	cd infrastructure/ansible && \
-	ansible-playbook deploy.yml --tags "start" -i inventory
+	ansible-playbook deploy.yml --tags "start" -i inventory --ask-become-pass
 	@echo -e "\n\nCaptured images can be viewed at the following URL:"
 	@echo -e "http://$(AWS_S3_BUCKET_NAME).s3-website-$(AWS_REGION).amazonaws.com"
 
@@ -101,7 +103,7 @@ config-up: $(VENV) ansible-inventory
 config-down: ansible-inventory
 	source $(VENV)/bin/activate && \
 	cd infrastructure/ansible && \
-	ansible-playbook deploy.yml --tags "stop" -i inventory
+	ansible-playbook deploy.yml --tags "stop" -i inventory --ask-become-pass
 
 .PHONY: deploy
 deploy: cloud-up config-up
