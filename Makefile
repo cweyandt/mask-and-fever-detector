@@ -13,6 +13,10 @@ export TF_VAR_instance_type    := $(AWS_INSTANCE_TYPE)
 export TF_VAR_key_name         := $(AWS_SSH_KEY_NAME)
 export TF_VAR_bucket_name      := $(AWS_S3_BUCKET_NAME)
 
+ifeq ($(EDGE_ASK_PASS),True)
+	ASK_PASS = --ask-become-pass
+endif
+
 $(VENV):
 	python3 -mvenv $(VENV) && pip install -r requirements.txt
 
@@ -95,7 +99,7 @@ ansible-inventory:
 config-up: $(VENV) ansible-inventory
 	source $(VENV)/bin/activate && \
 	cd infrastructure/ansible && \
-	ansible-playbook deploy.yml --tags "start" -i inventory --ask-become-pass
+	ansible-playbook deploy.yml --tags "start" -i inventory $(ASK_PASS)
 	@echo -e "\n\nCaptured images can be viewed at the following URL:"
 	@echo -e "http://$(AWS_S3_BUCKET_NAME).s3-website-$(AWS_REGION).amazonaws.com"
 
@@ -103,7 +107,7 @@ config-up: $(VENV) ansible-inventory
 config-down: ansible-inventory
 	source $(VENV)/bin/activate && \
 	cd infrastructure/ansible && \
-	ansible-playbook deploy.yml --tags "stop" -i inventory --ask-become-pass
+	ansible-playbook deploy.yml --tags "stop" -i inventory $(ASK_PASS)
 
 .PHONY: deploy
 deploy: cloud-up config-up
