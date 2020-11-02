@@ -1,0 +1,16 @@
+---
+version: '2'
+services:
+  mqtt_broker:
+    image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker:latest
+    ports:
+      - "1883:1883"
+
+  image_processor:
+    image: {{ lookup('env','DOCKER_REPO') }}/image-processor:latest
+    depends_on:
+      - mqtt_broker
+    environment:
+      LOCALMQTT_URL: mqtt://user:password@mqtt_broker:1883
+      S3_REGION: "{{ tfstate.outputs.region.value }}"
+      S3_BUCKET: "{{ tfstate.outputs.s3_bucket_name.value }}"

@@ -1,0 +1,55 @@
+---
+- hosts: all
+  gather_facts: False
+  become: True
+  pre_tasks:
+    - name: Wait for systems to become accessible
+      wait_for_connection: {}
+      tags: start
+    - name: gather facts
+      setup: {}
+      tags: start
+  roles:
+    - {role: python_docker, tags: [start]}
+
+- hosts: image_servers
+  gather_facts: False
+  become: True
+  pre_tasks:
+    - include_vars:
+        file: ../terraform/terraform.tfstate
+        name: tfstate
+      tags: start
+  roles:
+    - {role: image_server, tags: [start]}
+
+- hosts: edge_devices
+  gather_facts: False
+  pre_tasks:
+    - include_vars:
+        file: ../terraform/terraform.tfstate
+        name: tfstate
+      tags: start
+  roles:
+    - {role: edge_device, tags: [start]}
+
+- hosts: localhost
+  gather_facts: False
+  become: False
+  pre_tasks:
+    - include_vars:
+        file: ../terraform/terraform.tfstate
+        name: tfstate
+      tags: start
+  roles:
+    - {role: s3, tags: [start]}
+
+- hosts: all
+  gather_facts: False
+  become: True
+  tasks:
+  - name: Stop docker-compose
+    command:
+      cmd: docker-compose -f /tmp/docker-compose.yml down
+    tags:
+      - stop

@@ -1,0 +1,10 @@
+- name: Copy docker-compose file to edge device
+  template:
+    src: docker-compose.yml.j2
+    dest: /tmp/docker-compose.yml
+    mode: '0644'
+
+- name: Start docker-compose
+  docker_compose:
+    pull: yes
+    project_src: /tmp

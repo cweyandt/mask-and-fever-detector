@@ -1,0 +1,40 @@
+- name: Install pip
+  apt:
+    update_cache: yes
+    name: python3-pip
+    state: present
+
+- name: Install docker
+  apt:
+    name: docker.io
+    state: present
+
+- name: Install docker-compose
+  apt:
+    name: docker-compose
+    state: present
+
+- name: Install docker python module 
+  pip:
+    name: docker
+  when: ansible_architecture == "x86_64"
+
+- name: Install docker-compose python module 
+  pip:
+    name: docker-compose
+  when: ansible_architecture == "x86_64"
+
+- name: Make sure docker service is running
+  systemd:
+    state: started
+    name: docker
+    enabled: yes
+  when: ansible_architecture == "x86_64"
+
+- name: adding existing user ubuntu to group docker
+  user:
+    name: ubuntu
+    groups: docker
+    append: yes
+  when: ansible_architecture == "x86_64"
+

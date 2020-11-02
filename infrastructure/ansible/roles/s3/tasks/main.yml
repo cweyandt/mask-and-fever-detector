@@ -1,0 +1,38 @@
+- name: create temporary file
+  tempfile:
+    state: file
+    suffix: temp
+  register: tempfile_js
+
+- name: Write javascript template to file
+  template:
+    src: PhotoViewer.js.j2
+    dest: "{{ tempfile_js.path }}"
+    mode: '0644'
+
+- name: Upload website index.html
+  aws_s3:
+    bucket: "{{ tfstate.outputs.s3_bucket_name.value }}"
+    object: /index.html
+    src: index.html
+    mode: put
+
+- name: Upload error.html
+  aws_s3:
+    bucket: "{{ tfstate.outputs.s3_bucket_name.value }}"
+    object: /error.html
+    src: error.html
+    mode: put
+
+- name: Upload website javascript
+  aws_s3:
+    bucket: "{{ tfstate.outputs.s3_bucket_name.value }}"
+    object: /PhotoViewer.js
+    src: "{{ tempfile_js.path }}"
+    mode: put
+
+- name: remove temp file
+  file:
+    path: "{{ tempfile_js.path }}"
+    state: absent
+

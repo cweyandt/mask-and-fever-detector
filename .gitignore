@@ -233,6 +233,7 @@ celerybeat.pid
 
 # Environments
 .env
+.envrc
 .venv
 env/
 venv/
@@ -264,3 +265,7 @@ dmypy.json
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm,macos
 
 .idea/
+
+# terraform state files
+terraform.tfstate*
+.terraform
