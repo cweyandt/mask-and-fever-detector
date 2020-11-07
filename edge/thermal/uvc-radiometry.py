@@ -46,7 +46,7 @@ def ktoc(val):
 def raw_to_8bit(data):
   cv2.normalize(data, data, 0, 65535, cv2.NORM_MINMAX)
   np.right_shift(data, 8, data)
-  return cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2RGB)
+  return cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2BGR)
 
 def display_temperature(img, val_k, loc, color):
   val = ktof(val_k)
@@ -97,6 +97,7 @@ def main():
         print("uvc_start_streaming failed: {0}".format(res))
         exit(1)
 
+      i = 0
       try:
         while True:
           data = q.get(True, 500)
@@ -104,10 +105,14 @@ def main():
             break
           data = cv2.resize(data[:,:], (640, 480))
           minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
+          print(i,data)
           img = raw_to_8bit(data)
           display_temperature(img, minVal, minLoc, (255, 0, 0))
           display_temperature(img, maxVal, maxLoc, (0, 0, 255))
+          if i % 10 == 0:
+              cv2.imwrite(f'output/img{i}.png',img)
           cv2.imshow('Lepton Radiometry', img)
+          i += 1
           cv2.waitKey(1)
 
         cv2.destroyAllWindows()
