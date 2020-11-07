@@ -67,8 +67,7 @@ services:
                         - ./thermal:/usr/src/app/thermal
                         - /tmp/.X11-unix:/tmp/.X11-unix
                           #command:  >
-                          #sh -c "cd /edge/thermal && 
-                          #    python thermalDetector.py"
+                          # sh -c "python3 thermal/uvc-radiometry.py"
 
         # distance:
         #         build: ./distance

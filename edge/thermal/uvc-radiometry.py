@@ -109,7 +109,7 @@ def main():
           img = raw_to_8bit(data)
           display_temperature(img, minVal, minLoc, (255, 0, 0))
           display_temperature(img, maxVal, maxLoc, (0, 0, 255))
-          if i % 10 == 0:
+          if i % 100 == 0:
               cv2.imwrite(f'output/img{i}.png',img)
           cv2.imshow('Lepton Radiometry', img)
           i += 1
