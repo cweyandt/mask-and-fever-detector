@@ -56,12 +56,16 @@ services:
         
         thermal:
                 build: ./thermal
+                privileged: true
                 stdin_open: true
                 tty: true
+                environment: 
+                        - DISPLAY
                 depends_on:
                           - mosquitto
                 volumes:
-                        - /:/edge
+                        - ./thermal:/usr/src/app/thermal
+                        - /tmp/.X11-unix:/tmp/.X11-unix
                           #command:  >
                           #sh -c "cd /edge/thermal && 
                           #    python thermalDetector.py"
