@@ -24,12 +24,11 @@ RUN pip3 install -r requirements.txt
 RUN apt-get -y install cmake apt-utils
 
 # Install libusb requirement for libuvc
-RUN apt-get -y install libusb-dev 
+RUN apt-get -y install libusb-dev libusb-1.0-0-dev 
 
 # Install GroupGets version of libuvc that supports FLIR Lepton3
-#RUN git clone https://github.com/groupgets/libuvc
-#RUN cd libuvc && mkdir build && cd build && cmake .. 
-#RUN make && sudo make install
+RUN git clone https://github.com/groupgets/libuvc
+RUN cd libuvc && mkdir build && cd build && cmake .. && make && make install
 
 #WORKDIR = /edge/thermal
 #CMD python3 fowarder.py
