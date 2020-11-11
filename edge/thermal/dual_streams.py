@@ -11,8 +11,15 @@ except ImportError:
   from Queue import Queue
 import platform
 
+cameraID = 3
+vc = cv2.VideoCapture(cameraID)
 
 def get_usb_frame():
+    if vc.isOpened(): # try to get the first frame
+        rval, frame = vc.read()
+    else:
+        rval = False
+    
     frame_v = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)[:,:,2]
 
     blurredBrightness = cv2.bilateralFilter(frame_v,9,150,150)
@@ -25,13 +32,10 @@ def get_usb_frame():
     eroded = cv2.erode(mask, np.ones((erodeSize, erodeSize)))
     mask = cv2.dilate(eroded, np.ones((dilateSize, dilateSize)))
 
-    cv2.imshow("preview", cv2.resize(cv2.cvtColor(mask*edges, cv2.COLOR_GRAY2RGB) | frame, (640, 480), interpolation = cv2.INTER_CUBIC))
+    img = cv2.resize(cv2.cvtColor(mask*edges, cv2.COLOR_GRAY2RGB) | frame, (640, 480), interpolation = cv2.INTER_CUBIC)
 
-    rval, frame = vc.read()
     key = cv2.waitKey(5)
-    if key == 27: # exit on ESC
-        break
-
+    return img
 
 
 
@@ -138,11 +142,13 @@ def main():
           minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
           # print(i,data)
           img = raw_to_8bit(data)
+          img2 = get_usb_frame()
           display_temperature(img, minVal, minLoc, (255, 0, 0))
           display_temperature(img, maxVal, maxLoc, (0, 0, 255))
+          camera_images = np.hstack((img, img2))
           if i % 100 == 0:
-              cv2.imwrite(f'output/img{i}.png',img)
-          cv2.imshow('Lepton Radiometry', img)
+              cv2.imwrite(f'output/img{i}.png',camera_images)
+          cv2.imshow('Lepton Radiometry', camera_images)
           i += 1
           key = cv2.waitKey(2000)
           if key == 27: # exit on ESC

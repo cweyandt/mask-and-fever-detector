@@ -103,7 +103,7 @@ class CSI_Camera:
 # Currently there are setting frame rate on CSI Camera on Nano through gstreamer
 # Here we directly select sensor_mode 3 (1280x720, 59.9999 fps)
 def gstreamer_pipeline(
-    sensor_id=0,
+    sensor_id=2,
     sensor_mode=3,
     capture_width=1280,
     capture_height=720,
@@ -138,7 +138,7 @@ def start_cameras():
     left_camera = CSI_Camera()
     left_camera.open(
         gstreamer_pipeline(
-            sensor_id=0,
+            sensor_id=3,
             sensor_mode=3,
             flip_method=0,
             display_height=480,
