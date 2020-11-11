@@ -105,7 +105,7 @@ def main():
             break
           data = cv2.resize(data[:,:], (640, 480))
           minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
-          print(i,data)
+          # print(i,data)
           img = raw_to_8bit(data)
           display_temperature(img, minVal, minLoc, (255, 0, 0))
           display_temperature(img, maxVal, maxLoc, (0, 0, 255))
@@ -113,7 +113,9 @@ def main():
               cv2.imwrite(f'output/img{i}.png',img)
           cv2.imshow('Lepton Radiometry', img)
           i += 1
-          cv2.waitKey(1)
+          key = cv2.waitKey(2000)
+          if key == 27: # exit on ESC
+              break
 
         cv2.destroyAllWindows()
       finally:
