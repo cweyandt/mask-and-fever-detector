@@ -31,8 +31,7 @@ def adjust_box(w, h, box, change=0):
     endX += change
     endY += change
 
-    # ensure the bounding boxes fall within the dimensions of
-    # the frame
+    # ensure the bounding boxes fall within the dimensions of the frame
     (startX, startY) = (max(0, startX), max(0, startY))
     (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
     return (startX, startY, endX, endY)
@@ -110,7 +109,7 @@ class MaskDetector:
             png_image = frame_to_png(face)
             full_image = frame_to_png(frame)
             if display:
-                cv2.imshow("frame", gray)
+                cv2.imshow("frame", face)
             if self.mqtt_enabled:
                 Thread(
                     target=self.publish_message, args=(label, png_image, full_image)
