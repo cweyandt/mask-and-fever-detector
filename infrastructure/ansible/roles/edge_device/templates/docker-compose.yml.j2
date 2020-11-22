@@ -28,3 +28,4 @@ services:
       LOCAL_MQTT_PORT: 1883
       REMOTE_MQTT_HOST: "{{ tfstate.outputs.image_server_public_ip.value }}"
       REMOTE_MQTT_PORT: 1883
+      MINIMUM_COMMUTATIVE_IMAGE_DIFF: 0.15
