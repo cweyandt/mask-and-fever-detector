@@ -1,4 +1,6 @@
 - name: Install pip
+  retries: 3
+  delay: 5
   apt:
     update_cache: yes
     name: python3-pip
@@ -14,12 +16,12 @@
     name: docker-compose
     state: present
 
-- name: Install docker python module 
+- name: Install docker python module
   pip:
     name: docker
   when: ansible_architecture == "x86_64"
 
-- name: Install docker-compose python module 
+- name: Install docker-compose python module
   pip:
     name: docker-compose
   when: ansible_architecture == "x86_64"

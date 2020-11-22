@@ -1,16 +1,40 @@
 ---
 version: '2'
 services:
+  postgres:
+    image: postgres:13
+    expose:
+      - "5432"
+    volumes:
+      - /tmp/pg_init:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_DB: mask_detector
+      POSTGRES_PASSWORD: postgres
+
   mqtt_broker:
     image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker:latest
     ports:
       - "1883:1883"
 
+  metabase:
+    image: {{ lookup('env','DOCKER_REPO') }}/metabase:latest
+    depends_on:
+      - postgres
+    ports:
+      - "8080:3000"
+
   image_processor:
     image: {{ lookup('env','DOCKER_REPO') }}/image-processor:latest
     depends_on:
       - mqtt_broker
+      - postgres
+    command: sh -c '/wait && /bin/image-processor'
     environment:
       LOCALMQTT_URL: mqtt://user:password@mqtt_broker:1883
       S3_REGION: "{{ tfstate.outputs.region.value }}"
       S3_BUCKET: "{{ tfstate.outputs.s3_bucket_name.value }}"
+      DATABASE_URL: "postgresql://postgres:postgres@postgres/mask_detector?sslmode=disable"
+      WAIT_HOSTS: "postgres:5432"
+      WAIT_HOST_CONNECT_TIMEOUT: 30
+      WAIT_SLEEP_INTERVAL: 1
+

@@ -55,6 +55,14 @@ resource "aws_security_group" "w251_image_server" {
     cidr_blocks = ["${data.external.myipaddr.result.ip}/32"]
   }
 
+  ingress {
+    description = "Metabase from public IP"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["${data.external.myipaddr.result.ip}/32"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0

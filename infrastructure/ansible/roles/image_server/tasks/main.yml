@@ -1,7 +1,18 @@
-- name: Copy docker-compose file to edge device
+- name: Copy docker-compose file to image server
   template:
     src: docker-compose.yml.j2
     dest: /tmp/docker-compose.yml
+    mode: '0644'
+
+- name: Create postgres init script directory
+  file:
+    path: /tmp/pg_init
+    state: directory
+
+- name: Copy postgres schema to image server
+  copy:
+    src: postgres_schema.sql
+    dest: /tmp/pg_init/postgres_schema.sql
     mode: '0644'
 
 - name: Start docker-compose
