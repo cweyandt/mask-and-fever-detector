@@ -22,7 +22,7 @@ modules:
         return ts, img, data
 '''
 
-
+import traceback
 import time
 import cv2
 import numpy as np
@@ -36,7 +36,7 @@ class PureThermalCapture:
     def __init__(self, fps=8, buffer=2):
         
         self.BUF_SIZE = buffer
-        self.q = Queue(BUF_SIZE)
+        self.q = Queue(self.BUF_SIZE)
         self.PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.py_frame_callback)
         self.ctx = POINTER(uvc_context)()
         self.dev = POINTER(uvc_device)()
@@ -61,7 +61,7 @@ class PureThermalCapture:
 
     def start(self):
         try:
-            self.res = libuvc.uvc_open(dev, byref(devh))
+            self.res = libuvc.uvc_open(self.dev, byref(self.devh))
             if self.res < 0:
                 print("uvc_open error")
                 exit(1)
@@ -82,7 +82,7 @@ class PureThermalCapture:
 
             self.res = libuvc.uvc_start_streaming(self.devh, byref(self.ctrl), self.PTR_PY_FRAME_CALLBACK, None, 0)
             if self.res < 0:
-                print("uvc_start_streaming failed: {0}".format(res))
+                print("uvc_start_streaming failed: {0}".format(self.res))
                 exit(1)
             else:
                 self.running = True
@@ -90,28 +90,35 @@ class PureThermalCapture:
             print("Error starting UVC stream")
 
     
+
     def get(self):
+        ts = 0
         try:
             data = self.q.get(True, 500)
             if data is None:
-                return 0
-            ts = time()
-            self.idx += 1
-            data = cv2.resize(data[:,:], (640, 480))
-            minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
-            # print(i,data)
-            img = raw_to_8bit(data)
-            display_temperature(img, minVal, minLoc, (255, 0, 0))
-            display_temperature(img, maxVal, maxLoc, (0, 0, 255))
-            
-            if self.idx % 10 == 0:
-                cv2.imwrite(f'output/purethermal{i}.png',img)
-
-            cv2.imshow('Lepton Radiometry', img)
+                print("No data")
+                return 1
         except:
             print("Unable to get capture")
+            traceback.print_exc()
+            return 1
 
-        print("Returning PureThermal image with timestamp: " + ts)    
+
+        ts = time()
+        self.idx += 1
+        data = cv2.resize(data[:,:], (640, 480))
+        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
+        print(self.idx,ts,data)
+        img = raw_to_8bit(data)
+        display_temperature(img, minVal, minLoc, (255, 0, 0))
+        display_temperature(img, maxVal, maxLoc, (0, 0, 255))
+            
+        if self.idx % 10 == 0:
+            cv2.imwrite(f'output/purethermal{i}.png',img)
+
+        cv2.imshow('Lepton Radiometry', img)
+
+        print("Returning PureThermal image with timestamp: " + str(ts))    
         return ts, img, data
 
     def stop(self):
@@ -125,18 +132,17 @@ class PureThermalCapture:
     def py_frame_callback(self, frame, userptr):
 
         array_pointer = cast(frame.contents.data, POINTER(c_uint16 * (frame.contents.width * frame.contents.height)))
-        data = np.frombuffer(
-            array_pointer.contents, dtype=np.dtype(np.uint16)
-
-        ).reshape(
-            frame.contents.height, frame.contents.width
-        ) # no copy
-
-        # data = np.fromiter(
-        #   frame.contents.data, dtype=np.dtype(np.uint8), count=frame.contents.data_bytes
+        # data = np.frombuffer(
+        #     array_pointer.contents, dtype=np.dtype(np.uint16)
         # ).reshape(
-        #   frame.contents.height, frame.contents.width, 2
-        # ) # copy
+        #     frame.contents.height, frame.contents.width
+        # ) # no copy
+
+        data = np.fromiter(
+          frame.contents.data, dtype=np.dtype(np.uint8), count=frame.contents.data_bytes
+        ).reshape(
+          frame.contents.height, frame.contents.width, 2
+        ) # copy
 
         if frame.contents.data_bytes != (2 * frame.contents.width * frame.contents.height):
             return
