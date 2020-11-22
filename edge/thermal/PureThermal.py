@@ -13,7 +13,7 @@ modules:
 
     start(): 
         start uvc capture process 
-        
+
     stop():
         stop uvc capture process
 
@@ -27,14 +27,14 @@ import time
 import cv2
 import numpy as np
 try:
-  from queue import Queue
+    from queue import Queue
 except ImportError:
-  from Queue import Queue
-
+    from Queue import Queue
+from uvctypes import *
 
 class PureThermalCapture:
     def __init__(self, fps=8, buffer=2):
-        from uvctypes import *
+        
         self.BUF_SIZE = buffer
         self.q = Queue(BUF_SIZE)
         self.PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.py_frame_callback)
@@ -55,7 +55,9 @@ class PureThermalCapture:
             if self.res < 0:
                 print("uvc_find_device error")
                 exit(1)
-
+        except:
+            print("uvc_find_device error")
+            exit(1)
 
     def start(self):
         try:
@@ -84,6 +86,8 @@ class PureThermalCapture:
                 exit(1)
             else:
                 self.running = True
+        except:
+            print("Error starting UVC stream")
 
     
     def get(self):
@@ -104,6 +108,8 @@ class PureThermalCapture:
                 cv2.imwrite(f'output/purethermal{i}.png',img)
 
             cv2.imshow('Lepton Radiometry', img)
+        except:
+            print("Unable to get capture")
 
         print("Returning PureThermal image with timestamp: " + ts)    
         return ts, img, data
