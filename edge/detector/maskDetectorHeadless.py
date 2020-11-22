@@ -1,4 +1,6 @@
+from base64 import b64encode
 import logging
+import json
 import os
 from threading import Thread
 
@@ -17,8 +19,8 @@ FACE_MODEL_WEIGHTS = "model/res10_300x300_ssd_iter_140000.caffemodel"
 MASK_NET_MODEL = "model/mask_detector.model"
 
 MQTT_HOST = os.getenv("MQTT_HOST", "mqtt_broker")
-# MQTT_TOPIC = os.getenv("MQTT_TOPIC", "mask-detector")
-MQTT_PORT = int(os.getenv("MQTT_HOST", 1883))
+MQTT_TOPIC = os.getenv("MQTT_TOPIC", "mask-detector")
+MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 MQTT_KEEPALIVE = int(os.getenv("MQTT_KEEPALIVE", 60))
 
 
@@ -34,6 +36,11 @@ def adjust_box(w, h, box, change=0):
     (startX, startY) = (max(0, startX), max(0, startY))
     (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
     return (startX, startY, endX, endY)
+
+
+def frame_to_png(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    return cv2.imencode(".png", gray)[1].tobytes()
 
 
 class MaskDetector:
@@ -100,18 +107,27 @@ class MaskDetector:
             # determine the class label we'll use to publish the image
             label = "mask" if mask > withoutMask else "no_mask"
             logging.debug("detected label: %s" % label)
-            gray = cv2.cvtColor(face, cv2.COLOR_BGR2GRAY)
-            png_image = cv2.imencode(".png", gray)[1].tobytes()
+            png_image = frame_to_png(face)
+            full_image = frame_to_png(frame)
             if display:
                 cv2.imshow("frame", gray)
             if self.mqtt_enabled:
-                Thread(target=self.publish_message, args=(label, png_image)).start()
+                Thread(
+                    target=self.publish_message, args=(label, png_image, full_image)
+                ).start()
 
-    def publish_message(self, detection_type, frame):
+    def publish_message(self, detection_type, face_frame, full_frame):
         self.message_count += 1
         logging.debug("publishing message %d to mqtt", self.message_count)
-        topic = f"{detection_type}/png"
-        self.mqtt_client.publish(topic, frame)
+        # topic = f"{detection_type}/png"
+        # self.mqtt_client.publish(topic, frame)
+        msg = {
+            "detection_type": detection_type,
+            "image_encoding": "png",
+            "frame": b64encode(face_frame).decode(),
+            "full_frame": b64encode(full_frame).decode(),
+        }
+        self.mqtt_client.publish(MQTT_TOPIC, json.dumps(msg))
 
     def loadResources(self):
         """Load models & other resources"""
