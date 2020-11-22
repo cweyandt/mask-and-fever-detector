@@ -11,7 +11,7 @@ services:
       MQTT_URL: mqtt://user:password@mqtt_broker:1883
       CAMERA_INDEX:  {{ lookup('env','CAMERA_INDEX') }}
       MQTT_TOPIC: {{ lookup('env','MQTT_TOPIC') }}
-    command: ["./main.py", "maskDetector", "--noninteractive"]
+    command: ["./main.py", "maskDetector", "--noninteractive", "--log-level", "debug"]
 
   mqtt_broker:
     image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker:latest
