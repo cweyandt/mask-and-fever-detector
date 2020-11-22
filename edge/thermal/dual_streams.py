@@ -1,18 +1,120 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+'''
+Threaded video processing for dual camera streams. First stream is standard USB camera, 
+second stream is FLIR Lepton camera connected via a PureThermal2 I/O board.
+
+Usage:
+  dual_streams.py {<USB video device number>|<video file name>}
+
+  Goals:
+    1. Open a cv2 stream with cameraID specified as an environment variable
+    2. Open a uvc stream which auto-detects the PureThermal USB I/O board
+    3. Continually capture frames and put them in buffers
+    4. Match frames based on timestamp
+    5. Save/Display matched frames, discard unmatched frames 
+
+Keyboard shortcuts:
+
+  ESC - exit
+  space - undefined
+'''
+
+# Python 2/3 compatibility
+from __future__ import print_function
+
 from uvctypes import *
 import time
 import cv2
+import sys
 import numpy as np
-try:
-  from queue import Queue
-except ImportError:
-  from Queue import Queue
 import platform
+from utils import *
+from queue import Queue
+from collections import deque
 
-cameraID = 3
-vc = cv2.VideoCapture(cameraID)
+# Get CAMERA_INDEX from environment, default to 0
+# CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", 0))
+# MQTT_HOST = os.getenv("MQTT_HOST", "mqtt_broker")
+# MQTT_TOPIC = os.getenv("MQTT_TOPIC", "mask-detector")
+# MQTT_PORT = int(os.getenv("MQTT_HOST", 1883))
+# MQTT_KEEPALIVE = int(os.getenv("MQTT_KEEPALIVE", 60))
+
+# Check to see if a camera ID was passed in as an argument
+try:
+    cameraID = sys.argv[1]
+except:
+    cameraID = 0
+
+
+class videoStream:
+    def __init__(self, fps=8, buffer=80):
+        self._fps = fps
+        self._isReady = self.loadResources()
+        self.cap = cv2.VideoCapture(cameraID)
+        self._BUFFER = deque([])
+        self._bufferLength = buffer
+        self.running = False
+
+    def setFPS(self, fps):
+        """Adjust Frames Per Second"""
+        self._fps = fps
+
+    def getFrameTs(self, ts):
+        """return (ts,frame) from buffer with nearest timestamp"""
+        for i in range(len(self._BUFFER)):
+            if self._BUFFER[i].ts < ts && i==0:
+                return self._BUFFER[i].ts, self._BUFFER[i].frame
+            if self._BUFFER[i].ts < ts && i>0:
+                t1 = abs(ts - self._BUFFER[i].ts) 
+                t2 = abs(ts - self._BUFFER[i-1].ts)
+                if t1 > t2:
+                    return self._BUFFER[i-1].ts, self._BUFFER[i-1].frame
+                else:
+                    return self._BUFFER[i].ts,  self._BUFFER[i].frame
+
+    def run(self):
+        """Start frame capture, place timestamp and frame in buffer"""
+        self.running = True
+        while self.running:
+            # Capture frame-by-frame
+            _, frame = self.cap.read()
+
+            # Our operations on the frame come here
+            # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Add the frame to the buffer
+            self._BUFFER.appendleft({ts: time(), frame: frame})
+            if len(self._BUFFER) > self._bufferLength):
+                self._BUFFER.pop()
+
+        # When everything done, release the capture
+        self.cap.release()
+        return
+
+    def stop(self):
+        """Stop fram capture"""
+        if self.running:
+          print("Stopping videoStream")
+          self.running = False
+        else:
+          print("videoStream cannot stop becaues it is not running")
+        return
+
+    def status(self):
+        print(f'------- videoStream is {self.running} -------')
+        print(f"------- videoStream buffer length: {len(self._BUFFER)} --------")
+        for i in range(len(self._BUFFER)): 
+            print(self._BUFFER[i].ts)
+
+    def display(self):
+        while True:
+            cv2.imshow("frame", gray)
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+        return
+
 
 def get_usb_frame():
     if vc.isOpened(): # try to get the first frame
@@ -165,4 +267,6 @@ def main():
     libuvc.uvc_exit(ctx)
 
 if __name__ == '__main__':
-  main()
+    print(__doc__)
+    main()
+    cv.destroyAllWindows()
