@@ -131,6 +131,7 @@ class PureThermalCapture:
 
     def py_frame_callback(self, frame, userptr):
 
+        ts = time()
         array_pointer = cast(frame.contents.data, POINTER(c_uint16 * (frame.contents.width * frame.contents.height)))
         # data = np.frombuffer(
         #     array_pointer.contents, dtype=np.dtype(np.uint16)
@@ -148,7 +149,7 @@ class PureThermalCapture:
             return
 
         if not self.q.full():
-            self.q.put(data)
+            self.q.put(dict({'ts':ts, 'frame':data}))
 
     
 def ktof(self, val):
