@@ -8,6 +8,7 @@ from tensorflow.keras.layers import (
 )
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.models import Model
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 
 # create a model
 def create_mask_detector_mobilenet(input_shape):
