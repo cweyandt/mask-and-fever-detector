@@ -118,7 +118,7 @@ func (m *MQTTMessage) Save() error {
 }
 
 func (m *MQTTMessage) saveToS3() error {
-  now := time.Now().UnixNano()
+	now := time.Now().UnixNano()
 	key := fmt.Sprintf("%s/%d.%s", m.DetectionType, now, m.ImageEncoding)
 	if err := saveToS3(key, m.Base64Frame); err != nil {
 		return err
