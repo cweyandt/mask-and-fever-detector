@@ -1,0 +1,15 @@
+version: '3'
+services:
+  trainer:
+    build:
+      context: .
+    networks:
+      - aws
+    privileged: true
+    environment:
+      - S3_BUCKET=covid19-detector
+    devices:
+      - "/dev/fuse"
+networks:
+        aws:
+            driver: bridge      
