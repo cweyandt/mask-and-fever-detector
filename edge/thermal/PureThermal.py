@@ -19,7 +19,7 @@ modules:
 
     get():  
         get most recent image with timestamp and pixel data in degrees Kelvin
-        return ts, img, data
+        return ts, img, thermal, maxVal, maxLoc
 '''
 
 import traceback
@@ -117,7 +117,7 @@ class PureThermalCapture:
         # cv2.imshow('Lepton Radiometry', img)
 
         print("Returning PureThermal image with timestamp: " + str(ts))    
-        return dict({'ts':data['ts'], 'frame':img, 'thermal':frame})
+        return dict({'ts':data['ts'], 'frame':img, 'thermal':frame, 'maxVal':maxVal, 'maxLoc':maxLoc})
 
     def stop(self):
         libuvc.uvc_stop_streaming(self.devh)
