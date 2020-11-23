@@ -85,7 +85,7 @@ class MaskDetector:
             box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
 
             # grow the box a little bit to ensure we capture the full face
-            (startX, startY, endX, endY) = adjust_box(w, h, box, 30)
+            (startX, startY, endX, endY) = adjust_box(w, h, box, 0)
 
             face = frame[startY:endY, startX:endX]
             face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
@@ -99,6 +99,9 @@ class MaskDetector:
             face_array = preprocess_input(face)
             face_array = np.expand_dims(face, axis=0)
             faces.append(face_array)
+
+        if len(faces) == 0:
+            return
 
         for pred in self._maskNet.predict(faces):
             (mask, withoutMask) = pred
@@ -151,7 +154,9 @@ class MaskDetector:
                 self.detect_masks(frame, display)
             # broad except here so that errors don't crash detection
             except Exception as e:
-                logging.error("error running mask detection: %s" % str(e))
+                logging.error(
+                    "error running mask detection: %s" % str(e), exc_info=True
+                )
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break

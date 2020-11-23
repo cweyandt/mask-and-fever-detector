@@ -60,8 +60,10 @@ def check_if_seen(detection_type, img):
     img_hist = cv2.calcHist([img], [0], None, [256], [0, 256])
     for i, seen in enumerate(seen_images[detection_type]):
         if calc_difference(img_hist, seen) <= MINIMUM_COMMUTATIVE_IMAGE_DIFF:
-            seen_images[detection_type][i] = img_hist
+            seen_images[detection_type].pop(i)
+            seen_images[detection_type].insert(0, img_hist)
             return True
+
     seen_images[detection_type].insert(0, img_hist)
     if len(seen_images[detection_type]) > 100:
         seen_images[detection_type].pop()
