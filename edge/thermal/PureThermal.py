@@ -23,7 +23,7 @@ modules:
 '''
 
 import traceback
-import time
+from time import time
 import cv2
 import numpy as np
 try:
@@ -44,6 +44,7 @@ class PureThermalCapture:
         self.ctrl = uvc_stream_ctrl()
         self.running = False
         self.idx = 0
+        self.data = 0
 
         self.res = libuvc.uvc_init(byref(self.ctx), 0)
         if self.res < 0:
@@ -92,7 +93,6 @@ class PureThermalCapture:
     
 
     def get(self):
-        ts = 0
         try:
             data = self.q.get(True, 500)
             if data is None:
@@ -102,24 +102,22 @@ class PureThermalCapture:
             print("Unable to get capture")
             traceback.print_exc()
             return 1
-
-
-        ts = time()
+        ts = data['ts']
+        frame = data['frame']
         self.idx += 1
-        data = cv2.resize(data[:,:], (640, 480))
-        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data)
-        print(self.idx,ts,data)
-        img = raw_to_8bit(data)
+        frame = cv2.resize(frame[:,:], (640, 480))
+        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(frame)
+        img = raw_to_8bit(frame)
         display_temperature(img, minVal, minLoc, (255, 0, 0))
         display_temperature(img, maxVal, maxLoc, (0, 0, 255))
             
         if self.idx % 10 == 0:
             cv2.imwrite(f'output/purethermal{i}.png',img)
 
-        cv2.imshow('Lepton Radiometry', img)
+        # cv2.imshow('Lepton Radiometry', img)
 
         print("Returning PureThermal image with timestamp: " + str(ts))    
-        return ts, img, data
+        return dict({'ts':data['ts'], 'frame':img, 'thermal':frame})
 
     def stop(self):
         libuvc.uvc_stop_streaming(self.devh)
@@ -133,17 +131,17 @@ class PureThermalCapture:
 
         ts = time()
         array_pointer = cast(frame.contents.data, POINTER(c_uint16 * (frame.contents.width * frame.contents.height)))
-        # data = np.frombuffer(
-        #     array_pointer.contents, dtype=np.dtype(np.uint16)
-        # ).reshape(
-        #     frame.contents.height, frame.contents.width
-        # ) # no copy
-
-        data = np.fromiter(
-          frame.contents.data, dtype=np.dtype(np.uint8), count=frame.contents.data_bytes
+        data = np.frombuffer(
+            array_pointer.contents, dtype=np.dtype(np.uint16)
         ).reshape(
-          frame.contents.height, frame.contents.width, 2
-        ) # copy
+            frame.contents.height, frame.contents.width
+        ) # no copy
+
+        # data = np.fromiter(
+        #   frame.contents.data, dtype=np.dtype(np.uint8), count=frame.contents.data_bytes
+        # ).reshape(
+        #   frame.contents.height, frame.contents.width, 2
+        # ) # copy
 
         if frame.contents.data_bytes != (2 * frame.contents.width * frame.contents.height):
             return
@@ -151,19 +149,22 @@ class PureThermalCapture:
         if not self.q.full():
             self.q.put(dict({'ts':ts, 'frame':data}))
 
-    
-def ktof(self, val):
+        self.data = dict({'ts':ts, 'frame':data})
+
+
+
+def ktof(val):
     return (1.8 * ktoc(val) + 32.0)
 
-def ktoc(self, val):
+def ktoc(val):
     return (val - 27315) / 100.0
 
-def raw_to_8bit(self, data):
+def raw_to_8bit(data):
     cv2.normalize(data, data, 0, 65535, cv2.NORM_MINMAX)
     np.right_shift(data, 8, data)
     return cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2BGR)
 
-def display_temperature(self, img, val_k, loc, color):
+def display_temperature(img, val_k, loc, color):
     val = ktof(val_k)
     cv2.putText(img,"{0:.1f} degF".format(val), loc, cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
     x, y = loc
