@@ -23,7 +23,7 @@ modules:
 '''
 
 import traceback
-from time import time
+from time import time, ctime, sleep
 import cv2
 import numpy as np
 try:
@@ -110,11 +110,13 @@ class PureThermalCapture:
         img = raw_to_8bit(frame)
         display_temperature(img, minVal, minLoc, (255, 0, 0))
         display_temperature(img, maxVal, maxLoc, (0, 0, 255))
-            
-        if self.idx % 10 == 0:
-            cv2.imwrite(f'output/purethermal{i}.png',img)
-
-        # cv2.imshow('Lepton Radiometry', img)
+        draw_str(img, (10,10), f'TS: {ctime(ts)}')   
+        
+        if self.idx % 1 == 0:
+            cv2.imwrite(f'output/purethermal{self.idx}.png',img)
+        
+        # while True:
+        #    cv2.imshow('Lepton Radiometry', img)
 
         print("Returning PureThermal image with timestamp: " + str(ts))    
         return dict({'ts':data['ts'], 'frame':img, 'thermal':frame})
@@ -171,5 +173,21 @@ def display_temperature(img, val_k, loc, color):
     cv2.line(img, (x - 2, y), (x + 2, y), color, 1)
     cv2.line(img, (x, y - 2), (x, y + 2), color, 1)
 
+def draw_str(dst, target, s):
+    x, y = target
+    cv2.putText(dst, s, (x+1, y+1), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0), thickness = 2, lineType=cv2.LINE_AA)
+    cv2.putText(dst, s, (x, y), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv2.LINE_AA)
 
-        
+
+if __name__ == '__main__':
+    flir = PureThermalCapture()
+    flir.start()
+    flir.get()
+    flir.get()
+    flir.get()
+    sleep(5)
+    flir.get()
+    flir.get()
+    flir.get()
+    flir.stop()
+
