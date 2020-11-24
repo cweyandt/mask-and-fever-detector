@@ -31,12 +31,15 @@ try:
 except ImportError:
     from Queue import Queue
 from uvctypes import *
+from collections import deque
 
 class PureThermalCapture:
     def __init__(self, fps=8, buffer=2):
         
         self.BUF_SIZE = buffer
         self.q = Queue(self.BUF_SIZE)
+        self._BUFFER = deque([])
+        self._bufferLength = buffer
         self.PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.py_frame_callback)
         self.ctx = POINTER(uvc_context)()
         self.dev = POINTER(uvc_device)()
@@ -94,7 +97,7 @@ class PureThermalCapture:
 
     def get(self):
         try:
-            data = self.q.get(True, 500)
+            data = self._BUFFER.popleft() #self.q.get(True, 500)
             if data is None:
                 print("No data")
                 return 1
@@ -110,7 +113,7 @@ class PureThermalCapture:
         img = raw_to_8bit(frame)
         display_temperature(img, minVal, minLoc, (255, 0, 0))
         display_temperature(img, maxVal, maxLoc, (0, 0, 255))
-        draw_str(img, (10,10), f'TS: {ctime(ts)}')   
+        draw_str(img, (10,20), f'{ctime(ts)}')   
         
         if self.idx % 1 == 0:
             cv2.imwrite(f'output/purethermal{self.idx}.png',img)
@@ -150,6 +153,11 @@ class PureThermalCapture:
 
         if not self.q.full():
             self.q.put(dict({'ts':ts, 'frame':data}))
+
+        # Add the frame to the buffer
+        self._BUFFER.appendleft({'ts': time(), 'frame': frame})
+        if len(self._BUFFER) > self._bufferLength):
+            self._BUFFER.pop()
 
         self.data = dict({'ts':ts, 'frame':data})
 
