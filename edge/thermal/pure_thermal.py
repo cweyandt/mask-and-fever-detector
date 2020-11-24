@@ -33,6 +33,8 @@ class PureThermalCapture:
 
     def __init__(self):
         
+        ## TODO: add output options, like whether or not to add annotations to the image
+
         if PureThermalCapture.alive:
             print("Cannot instantiate: An instance of PureThermalCapture is already loaded!")
             exit(1)
@@ -107,7 +109,7 @@ class PureThermalCapture:
         self.newData=False
 
         # Grab a copy of the most recent capture
-        data = self.data
+        data = self.data.copy()
 
         # Extract timestamp and frame 
         ts = data['ts']
