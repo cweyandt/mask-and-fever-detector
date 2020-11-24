@@ -36,10 +36,10 @@ from collections import deque
 class PureThermalCapture:
     def __init__(self, fps=8, buffer=2):
         
-        self.BUF_SIZE = buffer
-        self.q = Queue(self.BUF_SIZE)
-        self._BUFFER = deque([])
-        self._bufferLength = buffer
+        # self.BUF_SIZE = buffer
+        # self.q = Queue(self.BUF_SIZE)
+        # self._BUFFER = deque([])
+        # self._bufferLength = buffer
         self.PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.py_frame_callback)
         self.ctx = POINTER(uvc_context)()
         self.dev = POINTER(uvc_device)()
@@ -48,6 +48,7 @@ class PureThermalCapture:
         self.running = False
         self.idx = 0
         self.data = 0
+        self.newData=False
 
         self.res = libuvc.uvc_init(byref(self.ctx), 0)
         if self.res < 0:
@@ -71,7 +72,7 @@ class PureThermalCapture:
                 exit(1)
 
             print("device opened!")
-
+            sleep(2)
             print_device_info(self.devh)
             print_device_formats(self.devh)
 
@@ -90,14 +91,19 @@ class PureThermalCapture:
                 exit(1)
             else:
                 self.running = True
+                print("PureThermal streaming started.")
         except:
             print("Error starting UVC stream")
 
-    
+            
 
     def get(self):
+        while not self.newData:
+            # print("Waiting for data...")
+            # sleep(1)
+            pass
         try:
-            data = self._BUFFER.popleft() #self.q.get(True, 500)
+            data = self.data # self._BUFFER.popleft() #self.q.get(True, 500)
             if data is None:
                 print("No data")
                 return 1
@@ -105,6 +111,8 @@ class PureThermalCapture:
             print("Unable to get capture")
             traceback.print_exc()
             return 1
+
+        self.newData=False
         ts = data['ts']
         frame = data['frame']
         self.idx += 1
@@ -151,16 +159,16 @@ class PureThermalCapture:
         if frame.contents.data_bytes != (2 * frame.contents.width * frame.contents.height):
             return
 
-        if not self.q.full():
-            self.q.put(dict({'ts':ts, 'frame':data}))
+        # if not self.q.full():
+        #     self.q.put(dict({'ts':ts, 'frame':data}))
 
         # Add the frame to the buffer
-        self._BUFFER.appendleft({'ts': time(), 'frame': frame})
-        if len(self._BUFFER) > self._bufferLength):
-            self._BUFFER.pop()
+        # self._BUFFER.appendleft({'ts': ts, 'frame': frame})
+        # if len(self._BUFFER) > self._bufferLength:
+        #     self._BUFFER.pop()
 
         self.data = dict({'ts':ts, 'frame':data})
-
+        self.newData = True
 
 
 def ktof(val):
