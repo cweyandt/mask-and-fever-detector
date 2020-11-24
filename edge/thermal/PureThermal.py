@@ -6,10 +6,8 @@ Class wrapper for PureThermal2 UVC Capture Code
 Automatically detects USB-connected PureThermal2 I/O board 
 
 modules:
-    __init__(fps=8, buffer=2): 
+    __init__(): 
         create libuvc context and attempt to locate PureThermal2 device
-        fps: unused
-        buffer: capture buffer size, default = 2
 
     start(): 
         start uvc capture process 
@@ -26,20 +24,20 @@ import traceback
 from time import time, ctime, sleep
 import cv2
 import numpy as np
-try:
-    from queue import Queue
-except ImportError:
-    from Queue import Queue
 from uvctypes import *
-from collections import deque
 
 class PureThermalCapture:
-    def __init__(self, fps=8, buffer=2):
+    # Only allow one instance of the class to be called
+    alive = False
+
+    def __init__(self):
         
-        # self.BUF_SIZE = buffer
-        # self.q = Queue(self.BUF_SIZE)
-        # self._BUFFER = deque([])
-        # self._bufferLength = buffer
+        if alive:
+            print("Cannot instantiate: An instance of PureThermalCapture is already loaded!")
+            exit(1)
+        else:
+            alive = True
+
         self.PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.py_frame_callback)
         self.ctx = POINTER(uvc_context)()
         self.dev = POINTER(uvc_device)()
@@ -50,11 +48,13 @@ class PureThermalCapture:
         self.data = 0
         self.newData=False
 
+        # Initialize uvc context
         self.res = libuvc.uvc_init(byref(self.ctx), 0)
         if self.res < 0:
             print("uvc_init error")
             exit(1)
 
+        # Attempt to locate PureThermal I/O board
         try:
             self.res = libuvc.uvc_find_device(self.ctx, byref(self.dev), PT_USB_VID, PT_USB_PID, 0)
             if self.res < 0:
@@ -65,6 +65,7 @@ class PureThermalCapture:
             exit(1)
 
     def start(self):
+        # Open communications to the PureThermal I/O board
         try:
             self.res = libuvc.uvc_open(self.dev, byref(self.devh))
             if self.res < 0:
@@ -85,6 +86,7 @@ class PureThermalCapture:
                 frame_formats[0].wWidth, frame_formats[0].wHeight, int(1e7 / frame_formats[0].dwDefaultFrameInterval)
                 )
 
+            # Start uvc streaming thread, which calls py_frame_callback after each capture
             self.res = libuvc.uvc_start_streaming(self.devh, byref(self.ctrl), self.PTR_PY_FRAME_CALLBACK, None, 0)
             if self.res < 0:
                 print("uvc_start_streaming failed: {0}".format(self.res))
@@ -98,38 +100,35 @@ class PureThermalCapture:
             
 
     def get(self):
+        # Wait until a new frame has been returned by the thread callback
         while not self.newData:
-            # print("Waiting for data...")
-            # sleep(1)
             pass
-        try:
-            data = self.data # self._BUFFER.popleft() #self.q.get(True, 500)
-            if data is None:
-                print("No data")
-                return 1
-        except:
-            print("Unable to get capture")
-            traceback.print_exc()
-            return 1
-
         self.newData=False
+
+        # Extract timestamp and frame 
         ts = data['ts']
         frame = data['frame']
         self.idx += 1
+
         frame = cv2.resize(frame[:,:], (640, 480))
+
+        # Find min and max temperatures within the radiometric data
         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(frame)
-        img = raw_to_8bit(frame)
-        display_temperature(img, minVal, minLoc, (255, 0, 0))
-        display_temperature(img, maxVal, maxLoc, (0, 0, 255))
-        draw_str(img, (10,20), f'{ctime(ts)}')   
         
-        if self.idx % 1 == 0:
+        # Convert radiometric data to normalized grayscale
+        img = raw_to_8bit(frame) 
+        
+        # Add annotations to the image
+        display_temperature(img, minVal, minLoc, (255, 0, 0))  # add min temp
+        display_temperature(img, maxVal, maxLoc, (0, 0, 255))  # add max temp
+        draw_str(img, (10,20), f'{ctime(ts)}')   # add timestamp
+        
+        # save a copy of every n frames
+        n = 1
+        if self.idx % n == 0:
             cv2.imwrite(f'output/purethermal{self.idx}.png',img)
         
-        # while True:
-        #    cv2.imshow('Lepton Radiometry', img)
-
-        print("Returning PureThermal image with timestamp: " + str(ts))    
+        # print("Returning PureThermal image with timestamp: " + str(ts))    
         return dict({'ts':data['ts'], 'frame':img, 'thermal':frame, 'maxVal':maxVal, 'maxLoc':maxLoc})
 
     def stop(self):
@@ -148,40 +147,31 @@ class PureThermalCapture:
             array_pointer.contents, dtype=np.dtype(np.uint16)
         ).reshape(
             frame.contents.height, frame.contents.width
-        ) # no copy
-
-        # data = np.fromiter(
-        #   frame.contents.data, dtype=np.dtype(np.uint8), count=frame.contents.data_bytes
-        # ).reshape(
-        #   frame.contents.height, frame.contents.width, 2
-        # ) # copy
+        )
 
         if frame.contents.data_bytes != (2 * frame.contents.width * frame.contents.height):
             return
 
-        # if not self.q.full():
-        #     self.q.put(dict({'ts':ts, 'frame':data}))
-
-        # Add the frame to the buffer
-        # self._BUFFER.appendleft({'ts': ts, 'frame': frame})
-        # if len(self._BUFFER) > self._bufferLength:
-        #     self._BUFFER.pop()
-
+        # Save the new frame with timestamp    
         self.data = dict({'ts':ts, 'frame':data})
         self.newData = True
 
 
+# Convert radiometric values to degF
 def ktof(val):
     return (1.8 * ktoc(val) + 32.0)
 
+# Convert radiometric values to degC
 def ktoc(val):
     return (val - 27315) / 100.0
 
+# Convert radiometric frame into normalized grayscale 8-bit image
 def raw_to_8bit(data):
     cv2.normalize(data, data, 0, 65535, cv2.NORM_MINMAX)
     np.right_shift(data, 8, data)
     return cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2BGR)
 
+# Draw temperature measurement on image
 def display_temperature(img, val_k, loc, color):
     val = ktof(val_k)
     cv2.putText(img,"{0:.1f} degF".format(val), loc, cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
@@ -189,12 +179,13 @@ def display_temperature(img, val_k, loc, color):
     cv2.line(img, (x - 2, y), (x + 2, y), color, 1)
     cv2.line(img, (x, y - 2), (x, y + 2), color, 1)
 
+# Draw string on image
 def draw_str(dst, target, s):
     x, y = target
     cv2.putText(dst, s, (x+1, y+1), cv2.FONT_HERSHEY_PLAIN, 1.0, (0, 0, 0), thickness = 2, lineType=cv2.LINE_AA)
     cv2.putText(dst, s, (x, y), cv2.FONT_HERSHEY_PLAIN, 1.0, (255, 255, 255), lineType=cv2.LINE_AA)
 
-
+# Test function
 if __name__ == '__main__':
     flir = PureThermalCapture()
     flir.start()
