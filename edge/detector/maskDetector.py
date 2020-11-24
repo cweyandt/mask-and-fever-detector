@@ -1,5 +1,7 @@
 import os
 import sys
+import json
+
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QMessageBox, QFileDialog
 from PyQt5.QtCore import QTimer, Qt
@@ -8,6 +10,7 @@ from MainWindow import Ui_MainWindow
 from tensorflow.keras.models import load_model
 from absl import app
 from absl import flags
+from absl import logging
 from utils import *
 
 # Get CAMERA_INDEX from environment, default to 0
@@ -25,6 +28,10 @@ flags.DEFINE_string(
 )
 
 flags.DEFINE_string(
+    "mask_model_directory", "model", "directory containing all the mask models"
+)
+
+flags.DEFINE_string(
     "default_face_model_weights",
     "model/res10_300x300_ssd_iter_140000.caffemodel",
     "location of face detection model weights",
@@ -36,15 +43,15 @@ flags.DEFINE_string(
     "location of face detection model structure file",
 )
 
-flags.DEFINE_string(
-    "mask_net_model", "model/mask_detector.model", "location of mask detection model",
-)
+# flags.DEFINE_string(
+#     "mask_net_model", "model/mask_detector.model", "location of mask detection model",
+# )
 
 
 class QtCapture(QWidget):
     """Custom GUI for capturing video, performing facial point detections and displaying the results in the video"""
 
-    def __init__(self, mainwindow, fps=30):
+    def __init__(self, mainwindow, mask_model, fps=30):
         super(QWidget, self).__init__()
 
         self._mainwindow = mainwindow
@@ -54,9 +61,9 @@ class QtCapture(QWidget):
         lay = QVBoxLayout()
         lay.addWidget(self.video_frame)
         self.setLayout(lay)
-        self._isReady = self.loadResources()
-        self._model_loaded = False
-
+        self._selected_mask_model = mask_model
+        self._model_loaded = self.loadResources()
+ 
         if FLAGS.use_yoloface:
             self.face_detection_fn = (
                 self.detect_face_with_yoloface
@@ -254,6 +261,11 @@ class QtCapture(QWidget):
         self.cap.release()
         super(QWidget, self).deleteLater()
 
+    def updateModel(self, text):
+        logging.info(f"Updating the mask model to: {text}")
+        self._model_loaded = False
+        self._selected_mask_model = text
+
     def loadResources(self):
         """Load models & other resources"""
         # (1) load face detection model(yoloface)
@@ -271,7 +283,9 @@ class QtCapture(QWidget):
             self._model_name = "default-single-face"
 
         # (2) mask detection model
-        self._maskNet = load_model(FLAGS.mask_net_model)
+        self._maskNet = load_model(
+            os.path.join(FLAGS.mask_model_directory,self._mainwindow._mask_models[self._selected_mask_model])
+        )
         self._statusbar = self._mainwindow.statusBar()
         self._mainwindow.statusBar().showMessage(f"Loaded model: {self._model_name}")
         self._model_loaded = True
@@ -285,13 +299,22 @@ class MaskDetector(QtWidgets.QMainWindow):
         super().__init__()
         self.setupUI()
 
+    def populateCombobox(self):
+        logging.info("populating combo box..")
+        with open("model/models.json") as f:
+            modelList = json.load(f)
+            self._ui.comboBox_model.clear()
+            self._mask_models = modelList["mask-models"]
+            self._ui.comboBox_model.addItems(list(self._mask_models.keys()))
+
     def setupUI(self):
         """setup UI"""
         logging.info(f"Loaded UI..")
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
         self.setWindowTitle("Dr.Keras - Mask Detector")
-        self._capture_widget = QtCapture(mainwindow=self)
+        self.populateCombobox()
+        self._capture_widget = QtCapture(mainwindow=self, mask_model=self._ui.comboBox_model.currentText())
         self._ui.verticalLayout.addChildWidget(self._capture_widget)
         self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH, DEFAULT_MAIN_WINDOW_HEIGHT)
         self._ui.menubar.setVisible(True)
@@ -299,6 +322,7 @@ class MaskDetector(QtWidgets.QMainWindow):
         # link events
         self._ui.pushButton_StartCapture.clicked.connect(self._capture_widget.start)
         self._ui.pushButton_StopCapture.clicked.connect(self._capture_widget.stop)
+        self._ui.comboBox_model.currentTextChanged.connect(self._capture_widget.updateModel)
 
         self._ui.menu_File.triggered.connect(self.closeEvent)
         self._ui.menu_About.triggered.connect(self.showAboutDialog)

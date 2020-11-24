@@ -1,0 +1,8 @@
+{
+    "mask-models": {
+      "v0.3" :  "model-v2.h5",
+      "v0.2" :  "CASIA_RMFD_LFW_PY_MOBILENETv2.02-0.0014.hdf5",
+      "v0.1" :  "mask_detector.model"
+      }
+  }
+  

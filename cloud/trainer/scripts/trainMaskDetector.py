@@ -70,6 +70,7 @@ def main(argv):
         class_mode="categorical",
         batch_size=FLAGS.batch_size,
         target_size=MASK_INPUT_IMAGE_SHAPE[:-1],
+
     )
 
     # create a model
@@ -85,6 +86,7 @@ def main(argv):
         save_weights_only=True,
         verbose=1,
         save_freq="epoch",
+
     )
     early_stopping_cb = keras.callbacks.EarlyStopping(
         patience=5, restore_best_weights=True
@@ -95,7 +97,7 @@ def main(argv):
     run_logdir = get_run_logdir(root_logdir)
     tensorboard_cb = keras.callbacks.TensorBoard(run_logdir)
 
-    STEPS_PER_EPOCH = len(train_df) // FLAGS.batch_size
+    STEPS_PER_EPOCH = len(train_df) // FLAGS.batch_size 
     STEPS_PER_EPOCH_VAL = len(validation_df) // FLAGS.batch_size
 
     # compile
