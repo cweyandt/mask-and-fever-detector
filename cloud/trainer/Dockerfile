@@ -43,11 +43,10 @@ RUN mkdir -p $MNT_POINT_PATH && \
 USER ${UID}:${GID}
 
 # copy file
-COPY ./trainMaskDetector.py /home/${USER}/
+COPY ./scripts/* /home/${USER}/
 
 # Execute
 ENV S3_BUCKET='covid19-detector'
 WORKDIR /home/${USER}
-#RUN /usr/local/bin/s3fs $S3_BUCKET $MNT_POINT_PATH -o iam_role=auto -o allow_other
-CMD ["bash","-c","echo b && echo c; while true; do sleep 5; echo sleep; done"]
+CMD /usr/local/bin/s3fs $S3_BUCKET $MNT_POINT_PATH -o iam_role=auto -o allow_otherl; python3 dummy.py
 
