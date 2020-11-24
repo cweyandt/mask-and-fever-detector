@@ -269,3 +269,4 @@ dmypy.json
 # terraform state files
 terraform.tfstate*
 .terraform
+*.png
