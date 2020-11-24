@@ -27,16 +27,17 @@ import numpy as np
 from uvctypes import *
 
 class PureThermalCapture:
+
     # Only allow one instance of the class to be called
     alive = False
 
     def __init__(self):
         
-        if alive:
+        if PureThermalCapture.alive:
             print("Cannot instantiate: An instance of PureThermalCapture is already loaded!")
             exit(1)
         else:
-            alive = True
+            PureThermalCapture.alive = True
 
         self.PTR_PY_FRAME_CALLBACK = CFUNCTYPE(None, POINTER(uvc_frame), c_void_p)(self.py_frame_callback)
         self.ctx = POINTER(uvc_context)()
@@ -104,6 +105,9 @@ class PureThermalCapture:
         while not self.newData:
             pass
         self.newData=False
+
+        # Grab a copy of the most recent capture
+        data = self.data
 
         # Extract timestamp and frame 
         ts = data['ts']
