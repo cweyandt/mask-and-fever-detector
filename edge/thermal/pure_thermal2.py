@@ -25,12 +25,13 @@ from time import time, ctime, sleep
 import cv2
 import numpy as np
 from uvctypes import *
+import sys
 
 # Check to see if a USB camera ID was passed in as an argument
 try:
     cameraID = sys.argv[1]
 except:
-    cameraID = 0
+    cameraID = 1
 
 class PureThermalCapture:
 
@@ -74,11 +75,12 @@ class PureThermalCapture:
             exit(1)
 
         # Initialize USB video stream
-        self.cameraID = cameraID
+        self.cameraID = int(cameraID)
         self.cap = cv2.VideoCapture(self.cameraID)
         # Set USB stream frame rate
-        cv2.SetCaptureProperty(self.cap, CV_CAP_PROP_FPS, self.fps)
+        # cv2.SetCaptureProperty(self.cap, CV_CAP_PROP_FPS, self.fps)
         self.rgb = 0
+        sleep(5)
 
 
 
@@ -125,7 +127,7 @@ class PureThermalCapture:
 
         # Grab a copy of the most recent capture
         data = self.thermal.copy()
-        rgb = self.rbg.copy()
+        rgb = self.rgb.copy()
 
         # Extract timestamp and frame 
         ts = data['ts']
@@ -133,7 +135,8 @@ class PureThermalCapture:
         self.idx += 1
 
         frame = cv2.resize(frame[:,:], (640, 480))
-
+        rgb = cv2.resize(rgb[:,:], (640,480))
+        
         # Find min and max temperatures within the radiometric data
         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(frame)
         
@@ -148,10 +151,10 @@ class PureThermalCapture:
         # save a copy of every n frames
         n = 1
         if self.idx % n == 0:
-            cv2.imwrite(f'output/purethermal{self.idx}.png',img)
+            cv2.imwrite(f'output/purethermal{self.idx}.png',np.hstack((img, rgb)))
         
         # print("Returning PureThermal image with timestamp: " + str(ts))    
-        return dict({'ts':data['ts'], 'frame':img, 'thermal':frame, 'rgb':rgb, maxVal':maxVal, 'maxLoc':maxLoc})
+        return dict({'ts':data['ts'], 'frame':img, 'thermal':frame, 'rgb':rgb, 'maxVal':maxVal, 'maxLoc':maxLoc})
 
     def stop(self):
         libuvc.uvc_stop_streaming(self.devh)
@@ -162,6 +165,8 @@ class PureThermalCapture:
 
 
     def py_frame_callback(self, frame, userptr):
+        while not self.cap.isOpened():
+            pass
 
         _,rgb = self.cap.read()
         ts = time()
@@ -212,7 +217,7 @@ def draw_str(dst, target, s):
 
 # Test function
 if __name__ == '__main__':
-    flir = PureThermalCapture()
+    flir = PureThermalCapture(cameraID=cameraID)
     flir.start()
     flir.get()
     flir.get()
