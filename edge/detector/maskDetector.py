@@ -3,7 +3,7 @@ import sys
 import json
 
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QMessageBox, QFileDialog, QProgressDialog
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 from MainWindow import Ui_MainWindow
@@ -299,12 +299,50 @@ class MaskDetector(QtWidgets.QMainWindow):
         super().__init__()
         self.setupUI()
 
+    def updateModel(self):
+        new_model_map = get_model_list()
+
+        #check the remaining file
+        new_models = { key:value for (key,value) in new_model_map.items() if key not in self._mask_models}
+        
+        if not new_models:
+            #not empty
+             msgBox = QMessageBox.about(
+                self,
+                "Information",
+                "Your models are up to date.",
+            )
+        else:
+            buttonReply = QMessageBox.question(
+                self,
+                "Warning",
+                f"There are {len(new_models)} new models. Update now?",
+                QMessageBox.Yes|QMessageBox.No,  QMessageBox.Yes
+            )
+
+            if buttonReply == QMessageBox.Yes:
+                try:
+                    download_models(new_models, FLAGS.mask_model_directory, self._mask_models)
+                    self.populateCombobox()
+                    msgBox = QMessageBox.information(
+                        self,
+                        "Success",
+                        "Successfully updated the model list",
+                    )
+                except:
+                     QMessageBox.critical(
+                         self,
+                        "Error",
+                        "Could not update models",
+                    )
+
+
     def populateCombobox(self):
         logging.info("populating combo box..")
         with open("model/models.json") as f:
             modelList = json.load(f)
             self._ui.comboBox_model.clear()
-            self._mask_models = modelList["mask-models"]
+            self._mask_models = modelList
             self._ui.comboBox_model.addItems(list(self._mask_models.keys()))
 
     def setupUI(self):
@@ -326,7 +364,7 @@ class MaskDetector(QtWidgets.QMainWindow):
 
         self._ui.menu_File.triggered.connect(self.closeEvent)
         self._ui.menu_About.triggered.connect(self.showAboutDialog)
-        # self._ui.pushButton_browse.clicked.connect(self.browseModel)
+        self._ui.pushButton_update.clicked.connect(self.updateModel)
 
     def showAboutDialog(self):
         """show dialog"""

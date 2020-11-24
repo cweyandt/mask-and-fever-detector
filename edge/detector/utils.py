@@ -311,7 +311,7 @@ def get_model_list():
 def test_get_model_list():
     with open("model/models.json") as f:
         new_model_map = get_model_list()
-        old_model_map = json.load(f)["mask-models"]
+        old_model_map = json.load(f)
 
         #check the remaining file
         remaining = { key:value for (key,value) in new_model_map.items() if key not in old_model_map}
@@ -323,8 +323,27 @@ def test_get_model_list():
             r = requests.get(value["url"], allow_redirects=True)
             open('facebook.ico', 'wb').write(r.content)
         
-        
+        #update the mode.json file
 
+        #update the result
+        
+def download_models(newmodellist, model_directory, existing_models):
+    for key,value in newmodellist.items():
+        #download the file
+        print(f"Downloading item {value['url']}")
+        r = requests.get(value["url"], allow_redirects=True)
+        open(os.path.join(model_directory,value["filename"]), 'wb').write(r.content)
+
+        #update model informatino
+        existing_models[key] = value["filename"]
+        
+    
+    #write the file!
+    with open(os.path.join(model_directory, "models.json"), 'w', encoding='utf-8') as f:
+        json.dump(dict(sorted(existing_models.items())), f, ensure_ascii=False, indent=4)
+
+
+    
 
 if __name__ == "__main__":
     test_get_model_list()
