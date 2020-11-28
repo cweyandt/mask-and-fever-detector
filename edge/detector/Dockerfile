@@ -1,5 +1,6 @@
 # Base image
-FROM imander/opencv-tensorflow
+ARG REPO
+FROM $REPO/opencv-tensorflow
 
 # Create working directory
 WORKDIR /usr/src/app/

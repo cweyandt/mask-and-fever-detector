@@ -1,4 +1,5 @@
-FROM imander/opencv-tensorflow
+ARG REPO
+FROM $REPO/opencv-tensorflow
 
 WORKDIR /edge/forwarder
 

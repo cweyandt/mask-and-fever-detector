@@ -9,6 +9,7 @@ Combine mask detector, temperature measurement, and social distancing evaluation
 
 **Software Dependencies:**
 - docker
+- docker buildx
 - jq
 - make
 - python3
