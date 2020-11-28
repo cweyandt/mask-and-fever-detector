@@ -23,23 +23,6 @@ services:
                           #sh -c "cd /edge/forwarder &&
                           #    python forwarder.py"
 
-        # video:
-        #         build: ./video
-        #         privileged: true
-        #         stdin_open: true
-        #         environment:
-        #                 DISPLAY: 'true'
-        #         tty: true
-        #         depends_on:
-        #                 - mosquitto
-        #                 - forwarder
-        #         volumes:
-        #                 - /:/edge
-        #         command: >
-        #                 sh -c "cd /edge/video &&
-        #                 python3 capture.py"
-
-
         detector: 
                 build: ./detector
                 privileged: true
@@ -52,30 +35,5 @@ services:
                 volumes: 
                         - /edge:/edge
                         - /tmp:/tmp
-                
-        
-        thermal:
-                build: ./thermal
-                stdin_open: true
-                tty: true
-                depends_on:
-                          - mosquitto
-                volumes:
-                        - /:/edge
-                          #command:  >
-                          #sh -c "cd /edge/thermal && 
-                          #    python thermalDetector.py"
-
-        # distance:
-        #         build: ./distance
-        #         stdin_open: true
-        #         tty: true
-        #         depends_on:
-        #                   - mosquitto
-        #         volumes:
-        #                 - /:/edge
-        #                   #command:  >
-        #                   #sh -c "cd /edge/distance &&
-        #                   #    python distanceDetector.py"
 
            
