@@ -30,9 +30,9 @@ buildx-opencv:
 	cd opencv && docker buildx build --push --platform linux/arm64 -t $(DOCKER_REPO)/opencv-tensorflow-aarch64 -f Dockerfile.cuda .
 	docker push $(DOCKER_REPO)/opencv-tensorflow-$(ARCH)
 	docker pull $(DOCKER_REPO)/opencv-tensorflow-aarch64
-	docker manifest create --amend imander/opencv-tensorflow imander/opencv-tensorflow-$(ARCH) imander/opencv-tensorflow-aarch64
-	docker manifest annotate imander/opencv-tensorflow imander/opencv-tensorflow-aarch64 --arch arm64
-	docker manifest push imander/opencv-tensorflow
+	docker manifest create --amend $(DOCKER_REPO)/opencv-tensorflow $(DOCKER_REPO)/opencv-tensorflow-$(ARCH) $(DOCKER_REPO)/opencv-tensorflow-aarch64
+	docker manifest annotate $(DOCKER_REPO)/opencv-tensorflow $(DOCKER_REPO)/opencv-tensorflow-aarch64 --arch arm64
+	docker manifest push $(DOCKER_REPO)/opencv-tensorflow
 
 .PHONY: build-maskdetector
 build-maskdetector:
@@ -74,7 +74,7 @@ buildx-all: buildx-opencv buildx-maskdetector buildx-processor buildx-forwarder 
 
 .PHONY: push-opencv
 push-opencv:
-	docker push $(DOCKER_REPO)/opencv-$(ARCH)
+	docker push $(DOCKER_REPO)/opencv-tensorflow-$(ARCH)
 
 .PHONY: push-maskdetector
 push-maskdetector:
