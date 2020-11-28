@@ -23,8 +23,7 @@ $(VENV):
 
 .PHONY: setup-buildx
 setup-buildx:
-	docker buildx create --use
-	docker buildx ls
+	docker buildx create --use --name build --node build --driver-opt network=host
 
 .PHONY: build-opencv
 build-opencv:
