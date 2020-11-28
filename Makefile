@@ -81,10 +81,10 @@ buildx-mqtt:
 	cd cloud/mosquitto && $(BUILDX) -t $(DOCKER_REPO)/mqtt-broker .
 
 .PHONY: build-all
-build-all: build-maskdetector build-processor build-forwarder build-metabase build-mqtt # build-opencv 
+build-all: build-opencv build-maskdetector build-processor build-forwarder build-metabase build-mqtt
 
 .PHONY: buildx-all
-buildx-all: buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase buildx-mqtt # buildx-opencv 
+buildx-all: buildx-opencv buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase buildx-mqtt
 
 .PHONY: push-opencv
 push-opencv:
