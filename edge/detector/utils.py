@@ -10,10 +10,15 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 import os
 import time
+import requests
+import json
 
 # -------------------------------------------------------------------
 # Parameters
 # -------------------------------------------------------------------
+
+# AWS related
+MODEL_URL = "https://u0z86tdspg.execute-api.us-west-2.amazonaws.com/prod/models"
 
 # training related
 INITIAL_LR = 1e-4
@@ -36,7 +41,7 @@ COLOR_YELLOW = (0, 255, 255)
 
 #GUI
 DEFAULT_MAIN_WINDOW_WIDTH = 718
-DEFAULT_MAIN_WINDOW_HEIGHT = 610
+DEFAULT_MAIN_WINDOW_HEIGHT = 665
 
 # dataset from
 # https://github.com/X-zhangyang/Real-World-Masked-Face-Dataset
@@ -287,3 +292,59 @@ def write_frame(process2, frame):
 def get_run_logdir(root_logdir):
     run_id = time.strftime("run_%Y_%m_%d-%H_%M_%S")
     return os.path.join(root_logdir, run_id)
+
+def get_model_list():
+    response = requests.get(url = MODEL_URL)
+    data = response.json()
+    print(f"received {len(data['message'])} from the server")
+   
+    #convert it to the required format
+    model_map = {}
+    for item in data["message"]:
+        model_map[item["version"]] = {
+            "url": item["url"],
+            "filename": item["filename"]
+        }
+        
+    return model_map
+
+def test_get_model_list():
+    with open("model/models.json") as f:
+        new_model_map = get_model_list()
+        old_model_map = json.load(f)
+
+        #check the remaining file
+        remaining = { key:value for (key,value) in new_model_map.items() if key not in old_model_map}
+        print(remaining)
+
+        #download the file
+        for key,value in remaining.items():
+            print(f"Downloading item {value['url']}")
+            r = requests.get(value["url"], allow_redirects=True)
+            open('facebook.ico', 'wb').write(r.content)
+        
+        #update the mode.json file
+
+        #update the result
+        
+def download_models(newmodellist, model_directory, existing_models):
+    for key,value in newmodellist.items():
+        #download the file
+        print(f"Downloading item {value['url']}")
+        r = requests.get(value["url"], allow_redirects=True)
+        open(os.path.join(model_directory,value["filename"]), 'wb').write(r.content)
+
+        #update model informatino
+        existing_models[key] = value["filename"]
+        
+    
+    #write the file!
+    with open(os.path.join(model_directory, "models.json"), 'w', encoding='utf-8') as f:
+        json.dump(dict(sorted(existing_models.items())), f, ensure_ascii=False, indent=4)
+
+
+    
+
+if __name__ == "__main__":
+    test_get_model_list()
+    

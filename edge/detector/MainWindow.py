@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindow.ui'
+# Form implementation generated from reading ui file 'res/ui/MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.0
 #
@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(718, 610)
+        MainWindow.resize(718, 665)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
@@ -23,7 +23,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(self.centralwidget)
-        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(20, 520, 691, 41))
+        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(20, 570, 691, 41))
         self.horizontalLayoutWidget_2.setObjectName("horizontalLayoutWidget_2")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_2)
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -34,6 +34,9 @@ class Ui_MainWindow(object):
         self.pushButton_StopCapture = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         self.pushButton_StopCapture.setObjectName("pushButton_StopCapture")
         self.horizontalLayout_2.addWidget(self.pushButton_StopCapture)
+        self.pushButton_update = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
+        self.pushButton_update.setObjectName("pushButton_update")
+        self.horizontalLayout_2.addWidget(self.pushButton_update)
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(20, 70, 691, 431))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
@@ -59,6 +62,12 @@ class Ui_MainWindow(object):
         self.label_2.setAlignment(QtCore.Qt.AlignCenter)
         self.label_2.setObjectName("label_2")
         self.horizontalLayout_4.addWidget(self.label_2)
+        self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
+        self.groupBox.setGeometry(QtCore.QRect(20, 500, 691, 61))
+        self.groupBox.setObjectName("groupBox")
+        self.comboBox_model = QtWidgets.QComboBox(self.groupBox)
+        self.comboBox_model.setGeometry(QtCore.QRect(10, 30, 671, 25))
+        self.comboBox_model.setObjectName("comboBox_model")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 718, 22))
@@ -88,7 +97,9 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Realtime COVID-19 Mask Detector - DR.SanFranDisco"))
         self.pushButton_StartCapture.setText(_translate("MainWindow", "Start"))
         self.pushButton_StopCapture.setText(_translate("MainWindow", "Stop"))
+        self.pushButton_update.setText(_translate("MainWindow", "Update"))
         self.label_2.setText(_translate("MainWindow", "W251 Final Project - Mask Detector"))
+        self.groupBox.setTitle(_translate("MainWindow", "Select Mask detector model"))
         self.menu_File.setTitle(_translate("MainWindow", "&File"))
         self.menu_About.setTitle(_translate("MainWindow", "&About"))
         self.action_Exit.setText(_translate("MainWindow", "&Exit"))

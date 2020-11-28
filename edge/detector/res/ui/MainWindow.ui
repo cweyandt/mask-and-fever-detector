@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>718</width>
-    <height>610</height>
+    <height>665</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>520</y>
+      <y>570</y>
       <width>691</width>
       <height>41</height>
      </rect>
@@ -46,6 +46,13 @@
       <widget class="QPushButton" name="pushButton_StopCapture">
        <property name="text">
         <string>Stop</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_update">
+       <property name="text">
+        <string>Update</string>
        </property>
       </widget>
      </item>
@@ -113,6 +120,29 @@
       </widget>
      </item>
     </layout>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>500</y>
+      <width>691</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Select Mask detector model</string>
+    </property>
+    <widget class="QComboBox" name="comboBox_model">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>671</width>
+       <height>25</height>
+      </rect>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
