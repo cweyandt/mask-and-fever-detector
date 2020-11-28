@@ -2,24 +2,24 @@
 version: '2'
 services:
   mask_detector:
-    image: {{ lookup('env','DOCKER_REPO') }}/maskdetector-{{ lookup('env','ARCH') }}:latest
+    image: {{ lookup('env','DOCKER_REPO') }}/maskdetector:latest
     devices:
       - "/dev/video{{ lookup('env','CAMERA_INDEX') }}:/dev/video{{ lookup('env','CAMERA_INDEX') }}"
     depends_on:
       - mqtt_broker
     environment:
-      MQTT_URL: mqtt://user:password@mqtt_broker-{{ lookup('env','ARCH') }}:1883
+      MQTT_URL: mqtt://user:password@mqtt_broker:1883
       CAMERA_INDEX:  {{ lookup('env','CAMERA_INDEX') }}
       MQTT_TOPIC: {{ lookup('env','MQTT_TOPIC') }}
     command: ["./main.py", "maskDetector", "--noninteractive", "--log-level", "debug"]
 
   mqtt_broker:
-    image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker-{{ lookup('env','ARCH') }}:latest
+    image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker:latest
     expose:
       - "1883"
 
   mqtt_forwarder:
-    image: {{ lookup('env','DOCKER_REPO') }}/image-forwarder-{{ lookup('env','ARCH') }}:latest
+    image: {{ lookup('env','DOCKER_REPO') }}/image-forwarder:latest
     depends_on:
       - mqtt_broker
     environment:
