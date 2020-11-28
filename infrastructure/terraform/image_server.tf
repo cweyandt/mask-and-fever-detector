@@ -15,7 +15,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
   }
 
   filter {
@@ -51,6 +51,14 @@ resource "aws_security_group" "w251_image_server" {
     description = "MQTT from public IP"
     from_port   = 1883
     to_port     = 1883
+    protocol    = "tcp"
+    cidr_blocks = ["${data.external.myipaddr.result.ip}/32"]
+  }
+
+  ingress {
+    description = "Metabase from public IP"
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["${data.external.myipaddr.result.ip}/32"]
   }

@@ -1,0 +1,6 @@
+create_table("message_stats") {
+  t.Column("id", "uuid", {})
+  t.Column("topic", "string", {})
+  t.Column("detection_type", "string", {})
+  t.Column("has_fever", "boolean", {"default": false})
+}

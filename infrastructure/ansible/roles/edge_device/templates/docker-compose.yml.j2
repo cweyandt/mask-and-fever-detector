@@ -19,9 +19,13 @@ services:
       - "1883"
 
   mqtt_forwarder:
-    image: {{ lookup('env','DOCKER_REPO') }}/mqtt-forwarder:latest
+    image: {{ lookup('env','DOCKER_REPO') }}/image-forwarder:latest
     depends_on:
       - mqtt_broker
     environment:
-      LOCALMQTT_URL: mqtt://user:password@mqtt_broker:1883
-      CLOUDMQTT_URL: "mqtt://user:password@{{ tfstate.outputs.image_server_public_ip.value }}:1883"
+      LOG_LEVEL: DEBUG
+      LOCAL_MQTT_HOST: mqtt_broker
+      LOCAL_MQTT_PORT: 1883
+      REMOTE_MQTT_HOST: "{{ tfstate.outputs.image_server_public_ip.value }}"
+      REMOTE_MQTT_PORT: 1883
+      MINIMUM_COMMUTATIVE_IMAGE_DIFF: 0.15

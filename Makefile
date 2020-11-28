@@ -1,7 +1,7 @@
-SHELL  = /bin/bash
-VENV   = .venv
-ARCH   = $(shell uname -m)
-BUILDX = docker buildx build --push --platform linux/amd64,linux/arm64
+SHELL    = /bin/bash
+VENV     = .venv
+ARCH     = $(shell uname -m)
+BUILDX   = docker buildx build --push --platform linux/amd64,linux/arm64
 
 include .env
 export DOCKER_CLI_EXPERIMENTAL := enabled
@@ -42,6 +42,14 @@ build-maskdetector:
 buildx-maskdetector:
 	cd edge/detector && $(BUILDX) -t $(DOCKER_REPO)/maskdetector .
 
+.PHONY: build-forwarder
+build-forwarder:
+	cd edge/forwarder && docker build -t $(DOCKER_REPO)/image-forwarder-$(ARCH) .
+
+.PHONY: buildx-forwarder
+buildx-forwarder:
+	cd edge/forwarder && $(BUILDX) -t $(DOCKER_REPO)/image-forwarder .
+
 .PHONY: build-processor
 build-processor:
 	cd cloud/processor && docker build -t $(DOCKER_REPO)/image-processor-$(ARCH) .
@@ -50,11 +58,19 @@ build-processor:
 buildx-processor:
 	cd cloud/processor && $(BUILDX) -t $(DOCKER_REPO)/image-processor .
 
+.PHONY: build-metabase
+build-metabase:
+	cd cloud/metabase && docker build -t $(DOCKER_REPO)/metabase-$(ARCH) .
+
+.PHONY: buildx-metabase
+buildx-metabase:
+	cd cloud/metabase && $(BUILDX) -t $(DOCKER_REPO)/metabase .
+
 .PHONY: build-all
-build-all: build-opencv build-maskdetector build-processor
+build-all: build-opencv build-maskdetector build-processor build-forwarder build-metabase
 
 .PHONY: buildx-all
-buildx-all: buildx-opencv buildx-maskdetector buildx-processor
+buildx-all: buildx-opencv buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase
 
 .PHONY: push-opencv
 push-opencv:
@@ -68,8 +84,12 @@ push-maskdetector:
 push-processor:
 	docker push $(DOCKER_REPO)/image-processor-$(ARCH)
 
+.PHONY: push-metabase
+push-metabase:
+	docker push $(DOCKER_REPO)/metabase-$(ARCH)
+
 .PHONY: push-all
-push-all: push-opencv push-maskdetector push-processor
+push-all: push-opencv push-maskdetector push-processor push-metabase
 
 .PHONY: plan
 plan:
@@ -102,6 +122,10 @@ config-up: $(VENV) ansible-inventory
 	ansible-playbook deploy.yml --tags "start" -i inventory $(ASK_PASS)
 	@echo -e "\n\nCaptured images can be viewed at the following URL:"
 	@echo -e "http://$(AWS_S3_BUCKET_NAME).s3-website-$(AWS_REGION).amazonaws.com"
+	@echo -e "\n\nMask detection stats can be viewed at the following URL:"
+	@echo -e "http://$$(jq -r '.outputs.image_server_public_ip.value' < infrastructure/terraform/terraform.tfstate):8080"
+	@echo -e "User:     admin@mask-detect.org"
+	@echo -e "Password: password123"
 
 .PHONY: config-down
 config-down: ansible-inventory

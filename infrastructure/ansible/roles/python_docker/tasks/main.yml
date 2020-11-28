@@ -1,25 +1,22 @@
-- name: Install pip
+- name: Install pip and docker
   apt:
+    name:
+      - python3-pip
+      - docker.io
+    state: present
     update_cache: yes
-    name: python3-pip
-    state: present
-
-- name: Install docker
-  apt:
-    name: docker.io
-    state: present
 
 - name: Install docker-compose
   apt:
     name: docker-compose
     state: present
 
-- name: Install docker python module 
+- name: Install docker python module
   pip:
     name: docker
   when: ansible_architecture == "x86_64"
 
-- name: Install docker-compose python module 
+- name: Install docker-compose python module
   pip:
     name: docker-compose
   when: ansible_architecture == "x86_64"
