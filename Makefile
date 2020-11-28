@@ -66,11 +66,19 @@ build-metabase:
 buildx-metabase:
 	cd cloud/metabase && $(BUILDX) -t $(DOCKER_REPO)/metabase .
 
+.PHONY: build-mqtt
+build-mqtt:
+	cd cloud/mosquitto && docker build -t $(DOCKER_REPO)/mqtt-broker-$(ARCH) .
+
+.PHONY: buildx-mqtt
+buildx-mqtt:
+	cd cloud/mqtt-broker && $(BUILDX) -t $(DOCKER_REPO)/mqtt-broker .
+
 .PHONY: build-all
-build-all: build-opencv build-maskdetector build-processor build-forwarder build-metabase
+build-all: build-opencv build-maskdetector build-processor build-forwarder build-metabase build-mqtt
 
 .PHONY: buildx-all
-buildx-all: buildx-opencv buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase
+buildx-all:  buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase buildx-mqtt
 
 .PHONY: push-opencv
 push-opencv:
