@@ -12,19 +12,19 @@ services:
       POSTGRES_PASSWORD: postgres
 
   mqtt_broker:
-    image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker:latest
+    image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker-{{ lookup('env','ARCH') }}:latest
     ports:
       - "1883:1883"
 
   metabase:
-    image: {{ lookup('env','DOCKER_REPO') }}/metabase:latest
+    image: {{ lookup('env','DOCKER_REPO') }}/metabase-{{ lookup('env','ARCH') }}:latest
     depends_on:
       - postgres
     ports:
       - "8080:3000"
 
   image_processor:
-    image: {{ lookup('env','DOCKER_REPO') }}/image-processor:latest
+    image: {{ lookup('env','DOCKER_REPO') }}/image-processor-{{ lookup('env','ARCH') }}:latest
     depends_on:
       - mqtt_broker
       - postgres

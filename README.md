@@ -52,7 +52,11 @@ $ make buildx-all
 
 ## Configuration
 
+
+
 The `.env` file should be used to configure various aspects of the infrastructure deployment. Refer to the comments in the sample file for details on each configuration option.
+
+
 
 ## Deploy
 

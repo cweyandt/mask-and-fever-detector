@@ -12,6 +12,7 @@ export TF_VAR_region           := $(AWS_REGION)
 export TF_VAR_instance_type    := $(AWS_INSTANCE_TYPE)
 export TF_VAR_key_name         := $(AWS_SSH_KEY_NAME)
 export TF_VAR_bucket_name      := $(AWS_S3_BUCKET_NAME)
+export ARCH     			   := $(ARCH)
 
 ifeq ($(EDGE_ASK_PASS),True)
 	ASK_PASS = --ask-become-pass
@@ -40,7 +41,7 @@ build-maskdetector:
 
 .PHONY: buildx-maskdetector
 buildx-maskdetector:
-	cd edge/detector && $(BUILDX) -t $(DOCKER_REPO)/maskdetector .
+	cd edge/detector && $(BUILDX) -t $(DOCKER_REPO)/maskdetector-$(ARCH) .
 
 .PHONY: build-forwarder
 build-forwarder:
@@ -48,7 +49,7 @@ build-forwarder:
 
 .PHONY: buildx-forwarder
 buildx-forwarder:
-	cd edge/forwarder && $(BUILDX) -t $(DOCKER_REPO)/image-forwarder .
+	cd edge/forwarder && $(BUILDX) -t $(DOCKER_REPO)/image-forwarder-$(ARCH) .
 
 .PHONY: build-processor
 build-processor:
@@ -56,7 +57,7 @@ build-processor:
 
 .PHONY: buildx-processor
 buildx-processor:
-	cd cloud/processor && $(BUILDX) -t $(DOCKER_REPO)/image-processor .
+	cd cloud/processor && $(BUILDX) -t $(DOCKER_REPO)/image-processor-$(ARCH) .
 
 .PHONY: build-metabase
 build-metabase:
@@ -64,13 +65,21 @@ build-metabase:
 
 .PHONY: buildx-metabase
 buildx-metabase:
-	cd cloud/metabase && $(BUILDX) -t $(DOCKER_REPO)/metabase .
+	cd cloud/metabase && $(BUILDX) -t $(DOCKER_REPO)/metabase-$(ARCH) .
+
+.PHONY: build-mqtt
+build-mqtt:
+	cd edge/mosquitto && docker build -t $(DOCKER_REPO)/mqtt-broker-$(ARCH) .
+
+.PHONY: buildx-mqtt
+buildx-mqtt:
+	cd edge/mosquitto && $(BUILDX) -t $(DOCKER_REPO)/mqtt-broker-$(ARCH) .
 
 .PHONY: build-all
-build-all: build-opencv build-maskdetector build-processor build-forwarder build-metabase
+build-all: build-maskdetector build-processor build-forwarder build-metabase build-mqtt
 
 .PHONY: buildx-all
-buildx-all: buildx-opencv buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase
+buildx-all: buildx-opencv buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase buildx-mqtt
 
 .PHONY: push-opencv
 push-opencv:
@@ -88,8 +97,12 @@ push-processor:
 push-metabase:
 	docker push $(DOCKER_REPO)/metabase-$(ARCH)
 
+.PHONY: push-mqtt
+push-mqtt:
+	docker push $(DOCKER_REPO)/mqtt-broker-$(ARCH)
+
 .PHONY: push-all
-push-all: push-opencv push-maskdetector push-processor push-metabase
+push-all: push-opencv push-maskdetector push-processor push-metabase push-mqtt
 
 .PHONY: plan
 plan:
