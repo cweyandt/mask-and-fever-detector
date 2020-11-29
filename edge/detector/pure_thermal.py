@@ -27,12 +27,14 @@ import numpy as np
 from uvctypes import *
 import sys
 import logging
+import os 
 
 # Check to see if a USB camera ID was passed in as an argument
 try:
-    cameraID = sys.argv[1]
+    CAMERA_INDEX = sys.argv[1]
 except:
-    cameraID = 1
+    # Get CAMERA_INDEX from environment, default to 0
+    CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", 0))   
 
 class PureThermalCapture:
 
@@ -218,7 +220,7 @@ def draw_str(dst, target, s):
 
 # Test function
 if __name__ == '__main__':
-    flir = PureThermalCapture(cameraID=cameraID)
+    flir = PureThermalCapture(cameraID=CAMERA_INDEX)
     flir.start()
     flir.get()
     flir.get()

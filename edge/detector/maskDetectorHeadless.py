@@ -53,7 +53,8 @@ class MaskDetector:
         if self.mqtt_enabled:
             self.mqtt_client = mqtt.Client()
         self._isReady = self.loadResources()
-        self.cap = cv2.VideoCapture(CAMERA_INDEX)
+        if not THERMAL_ACTIVE:
+            self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.message_count = 0
         self._flir = flir
 
@@ -147,12 +148,21 @@ class MaskDetector:
         # mqtt client
         if self.mqtt_enabled:
             self.mqtt_client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE)
+
+        # PureThermal2 FLIR capture
+        if THERMAL_ACTIVE:
+            flir.start()
         return True
 
     def run(self, display=False):
         while True:
             # Capture frame-by-frame
-            _, frame = self.cap.read()
+            if THERMAL_ACTIVE:
+                data = flir.get()
+                frame = data.rgb 
+            else:
+                _, frame = self.cap.read()
+
 
             try:
                 self.detect_masks(frame, display)
@@ -166,8 +176,11 @@ class MaskDetector:
                 break
 
         # When everything done, release the capture
-        self.cap.release()
-        cv2.destroyAllWindows()
+        if THERMAL_ACTIVE:
+            flir.stop()
+        else:
+            self.cap.release()
+            cv2.destroyAllWindows()
 
 
 def run(mqtt=True, display=False):
