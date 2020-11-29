@@ -26,6 +26,7 @@ import cv2
 import numpy as np
 from uvctypes import *
 import sys
+import logging
 
 # Check to see if a USB camera ID was passed in as an argument
 try:
@@ -43,7 +44,7 @@ class PureThermalCapture:
         ## TODO: add output options, like whether or not to add annotations to the image
 
         if PureThermalCapture.alive:
-            print("Cannot instantiate: An instance of PureThermalCapture is already loaded!")
+            logging.error("Cannot instantiate: An instance of PureThermalCapture is already loaded!"))
             exit(1)
         else:
             PureThermalCapture.alive = True
@@ -61,17 +62,17 @@ class PureThermalCapture:
         # Initialize uvc context
         self.res = libuvc.uvc_init(byref(self.ctx), 0)
         if self.res < 0:
-            print("uvc_init error")
+            logging.error("uvc_init error")
             exit(1)
 
         # Attempt to locate PureThermal I/O board
         try:
             self.res = libuvc.uvc_find_device(self.ctx, byref(self.dev), PT_USB_VID, PT_USB_PID, 0)
             if self.res < 0:
-                print("uvc_find_device error")
+                logging.error("uvc_find_device error")
                 exit(1)
         except:
-            print("uvc_find_device error")
+            logging.error("uvc_find_device error")
             exit(1)
 
         # Initialize USB video stream
@@ -89,17 +90,17 @@ class PureThermalCapture:
         try:
             self.res = libuvc.uvc_open(self.dev, byref(self.devh))
             if self.res < 0:
-                print("uvc_open error")
+                logging.error("uvc_open error")
                 exit(1)
 
-            print("device opened!")
+            logging.info("device opened!")
             sleep(2)
             print_device_info(self.devh)
             print_device_formats(self.devh)
 
             frame_formats = uvc_get_frame_formats_by_guid(self.devh, VS_FMT_GUID_Y16)
             if len(frame_formats) == 0:
-                print("device does not support Y16")
+                logging.error("device does not support Y16")
                 exit(1)
 
             libuvc.uvc_get_stream_ctrl_format_size(self.devh, byref(self.ctrl), UVC_FRAME_FORMAT_Y16,
@@ -109,13 +110,13 @@ class PureThermalCapture:
             # Start uvc streaming thread, which calls py_frame_callback after each capture
             self.res = libuvc.uvc_start_streaming(self.devh, byref(self.ctrl), self.PTR_PY_FRAME_CALLBACK, None, 0)
             if self.res < 0:
-                print("uvc_start_streaming failed: {0}".format(self.res))
+                logging.error("uvc_start_streaming failed: {0}".format(self.res))
                 exit(1)
             else:
                 self.running = True
-                print("PureThermal streaming started.")
+                logging.info("PureThermal streaming started.")
         except:
-            print("Error starting UVC stream")
+            logging.error("Error starting UVC stream")
 
             
 
@@ -158,7 +159,7 @@ class PureThermalCapture:
 
     def stop(self):
         libuvc.uvc_stop_streaming(self.devh)
-        print("Stopped streaming from PureThermal2")
+        logging.info("Stopped streaming from PureThermal2")
         libuvc.uvc_unref_device(self.dev)
         libuvc.uvc_exit(self.ctx)
         return 
