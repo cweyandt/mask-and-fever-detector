@@ -5,6 +5,7 @@ ARCH     = $(shell uname -m)
 include .env
 export DOCKER_CLI_EXPERIMENTAL := enabled
 export CAMERA_INDEX            := $(CAMERA_INDEX)
+export THERMAL_ACTIVE		   := $(THERMAL_ACTIVE)
 export DOCKER_REPO             := $(DOCKER_REPO)
 export MQTT_TOPIC              := $(MQTT_TOPIC)
 export TF_VAR_region           := $(AWS_REGION)
