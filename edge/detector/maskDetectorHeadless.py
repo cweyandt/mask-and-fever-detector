@@ -11,9 +11,12 @@ import paho.mqtt.client as mqtt
 from tensorflow.keras.models import load_model
 
 from utils import *
+from pure_thermal import *
 
 # Get CAMERA_INDEX from environment, default to 0
 CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", 0))
+# Check environment to see if Thermal Capture mode is ative
+THERMAL_ACTIVE = bool(os.getenv("THERMAL_ACTIVE", False))
 FACE_MODEL = "model/deploy.prototxt"
 FACE_MODEL_WEIGHTS = "model/res10_300x300_ssd_iter_140000.caffemodel"
 MASK_NET_MODEL = "model/mask_detector.model"
@@ -43,7 +46,7 @@ def frame_to_png(frame):
 
 
 class MaskDetector:
-    def __init__(self, fps=30, enable_mqtt=True):
+    def __init__(self, fps=30, enable_mqtt=True, flir=None):
         self._fps = fps
         self._model_loaded = False
         self.mqtt_enabled = enable_mqtt
@@ -52,6 +55,7 @@ class MaskDetector:
         self._isReady = self.loadResources()
         self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.message_count = 0
+        self._flir = flir
 
     def setFPS(self, fps):
         """Adjust Frames Per Second"""
@@ -168,8 +172,18 @@ class MaskDetector:
 
 def run(mqtt=True, display=False):
     detector = MaskDetector(enable_mqtt=mqtt)
-    detector.run(display=display)
-
+    
+    # Check .env to see if FLIR camera is used
+    if THERMAL_ACTIVE:
+        try:
+            flir = PureThermalCapture(cameraID=CAMERA_INDEX)
+            detector.run(display=display, flir=flir)
+        except Exception as e:
+        logging.error(
+                    "error loading PureThermalCapture class: %s" % str(e), exc_info=True
+                )
+    else:
+        detector.run(display=display)
 
 if __name__ == "__main__":
     run()
