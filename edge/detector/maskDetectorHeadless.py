@@ -97,7 +97,7 @@ class MaskDetector:
             face = cv2.resize(face, (224, 224))
             yield face
 
-    def detect_masks(self, frame, display=False):
+    def detect_masks(self, frame, data, display=False):
         faces = []
         for face in self.detect_faces(frame):
             face_array = img_to_array(face)
@@ -120,7 +120,7 @@ class MaskDetector:
                 cv2.imshow("frame", face)
             if self.mqtt_enabled:
                 Thread(
-                    target=self.publish_message, args=(label, png_image, full_image)
+                    target=self.publish_message, args=(label, png_image, full_image, data)
                 ).start()
 
     def publish_message(self, detection_type, face_frame, full_frame):
@@ -133,6 +133,11 @@ class MaskDetector:
             "image_encoding": "png",
             "frame": b64encode(face_frame).decode(),
             "full_frame": b64encode(full_frame).decode(),
+            "thermal_frame": b64encode(data.frame).decode(),
+            "thermal_data": b64encode(data.thermal).decode(),
+            "timestamp": data.ts,
+            "maxVal": data.maxVal,
+            "maxLoc": data.maxLoc, 
         }
         self.mqtt_client.publish(MQTT_TOPIC, json.dumps(msg))
 
@@ -165,7 +170,7 @@ class MaskDetector:
 
 
             try:
-                self.detect_masks(frame, display)
+                self.detect_masks(frame, data, display)
             # broad except here so that errors don't crash detection
             except Exception as e:
                 logging.error(
