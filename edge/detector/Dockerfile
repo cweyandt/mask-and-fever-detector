@@ -11,6 +11,7 @@ RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get -y install \
   python3-pyqt5 \
   python3-scipy \
   cmake \
+  vim \ 
   apt-utils \
   libusb-1.0-0-dev
 
