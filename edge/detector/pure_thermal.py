@@ -46,7 +46,7 @@ class PureThermalCapture:
         ## TODO: add output options, like whether or not to add annotations to the image
 
         if PureThermalCapture.alive:
-            logging.error("Cannot instantiate: An instance of PureThermalCapture is already loaded!"))
+            logging.error("Cannot instantiate: An instance of PureThermalCapture is already loaded!")
             exit(1)
         else:
             PureThermalCapture.alive = True

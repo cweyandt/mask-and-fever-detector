@@ -16,7 +16,12 @@ from pure_thermal import *
 # Get CAMERA_INDEX from environment, default to 0
 CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", 0))
 # Check environment to see if Thermal Capture mode is ative
-THERMAL_ACTIVE = bool(os.getenv("THERMAL_ACTIVE", False))
+if int(os.getenv("THERMAL_ACTIVE", 0 )) == 1:
+    THERMAL_ACTIVE = True
+else:
+    THERMAL_ACTIVE = False
+
+logging.info(f'THERMAL_ACTIVE = {THERMAL_ACTIVE}')
 FACE_MODEL = "model/deploy.prototxt"
 FACE_MODEL_WEIGHTS = "model/res10_300x300_ssd_iter_140000.caffemodel"
 MASK_NET_MODEL = "model/mask_detector.model"
@@ -52,11 +57,12 @@ class MaskDetector:
         self.mqtt_enabled = enable_mqtt
         if self.mqtt_enabled:
             self.mqtt_client = mqtt.Client()
+        self._flir = flir
         self._isReady = self.loadResources()
         if not THERMAL_ACTIVE:
             self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.message_count = 0
-        self._flir = flir
+        
 
     def setFPS(self, fps):
         """Adjust Frames Per Second"""
@@ -156,14 +162,14 @@ class MaskDetector:
 
         # PureThermal2 FLIR capture
         if THERMAL_ACTIVE:
-            flir.start()
+            self._flir.start()
         return True
 
     def run(self, display=False):
         while True:
             # Capture frame-by-frame
             if THERMAL_ACTIVE:
-                data = flir.get()
+                data = self._flir.get()
                 frame = data.rgb 
             else:
                 _, frame = self.cap.read()
@@ -189,18 +195,20 @@ class MaskDetector:
 
 
 def run(mqtt=True, display=False):
-    detector = MaskDetector(enable_mqtt=mqtt)
     
     # Check .env to see if FLIR camera is used
     if THERMAL_ACTIVE:
         try:
+            logging.info("Attempting PureThermal connection")
             flir = PureThermalCapture(cameraID=CAMERA_INDEX)
+            detector = MaskDetector(enable_mqtt=mqtt, flir=flir)
             detector.run(display=display, flir=flir)
         except Exception as e:
-        logging.error(
+            logging.error(
                     "error loading PureThermalCapture class: %s" % str(e), exc_info=True
                 )
     else:
+        detector = MaskDetector(enable_mqtt=mqtt)
         detector.run(display=display)
 
 if __name__ == "__main__":
