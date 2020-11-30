@@ -5,4 +5,4 @@ COPY Makefile .
 RUN make install_cuda
 
 RUN pip3 install scikit-build 
-RUN pip3 install opencv-python
+RUN pip3 install -vvv opencv-python
