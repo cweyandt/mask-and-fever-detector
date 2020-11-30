@@ -5,7 +5,6 @@ ARCH     = $(shell uname -m)
 include .env
 export DOCKER_CLI_EXPERIMENTAL := enabled
 export CAMERA_INDEX            := $(CAMERA_INDEX)
-export THERMAL_ACTIVE		   := $(THERMAL_ACTIVE)
 export DOCKER_REPO             := $(DOCKER_REPO)
 export MQTT_TOPIC              := $(MQTT_TOPIC)
 export TF_VAR_region           := $(AWS_REGION)
@@ -16,6 +15,12 @@ export TF_VAR_bucket_name      := $(AWS_S3_BUCKET_NAME)
 BUILDX   = docker buildx build --push --platform linux/amd64,linux/arm64 --build-arg REPO=$(DOCKER_REPO)
 BUILDX_edge   = docker buildx build --push --platform linux/arm64 --build-arg REPO=$(DOCKER_REPO)
 
+ifeq ($(THERMAL_ACTIVE),True)
+	export THERMAL_ACTIVE		   := 1
+else
+	export THERMAL_ACTIVE		   := 0
+endif
+
 ifeq ($(EDGE_ASK_PASS),True)
 	ASK_PASS = --ask-become-pass
 endif
@@ -23,8 +28,8 @@ endif
 $(VENV):
 	python3 -mvenv $(VENV) && pip install -r requirements.txt
 
-.PHONY: setup-buildx
-setup-buildx:
+.PHONY: buildx-setup
+buildx-setup:
 	docker buildx create --use --name build --node build --driver-opt network=host
 
 .PHONY: build-opencv
@@ -33,7 +38,8 @@ build-opencv:
 
 .PHONY: buildx-opencv
 buildx-opencv:
-	cd opencv && docker build -t $(DOCKER_REPO)/opencv-tensorflow-$(ARCH) .
+	#cd opencv && docker build -t $(DOCKER_REPO)/opencv-tensorflow-$(ARCH) .
+	docker pull $(DOCKER_REPO)/opencv-tensorflow-x86_64
 	cd opencv && docker buildx build --push --platform linux/arm64 -t $(DOCKER_REPO)/opencv-tensorflow-aarch64 -f Dockerfile.cuda .
 	docker push $(DOCKER_REPO)/opencv-tensorflow-$(ARCH)
 	docker pull $(DOCKER_REPO)/opencv-tensorflow-aarch64
