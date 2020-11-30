@@ -5,6 +5,9 @@ services:
     image: {{ lookup('env','DOCKER_REPO') }}/maskdetector:latest
     devices:
       - "/dev/video{{ lookup('env','CAMERA_INDEX') }}:/dev/video{{ lookup('env','CAMERA_INDEX') }}"
+    volumes:
+      - "/dev:/dev"
+    privileged: true
     depends_on:
       - mqtt_broker
     environment:

@@ -188,7 +188,7 @@ class MaskDetector:
 
         # When everything done, release the capture
         if THERMAL_ACTIVE:
-            flir.stop()
+            self._flir.stop()
         else:
             self.cap.release()
             cv2.destroyAllWindows()
@@ -202,14 +202,14 @@ def run(mqtt=True, display=False):
             logging.info("Attempting PureThermal connection")
             flir = PureThermalCapture(cameraID=CAMERA_INDEX)
             detector = MaskDetector(enable_mqtt=mqtt, flir=flir)
-            detector.run(display=display, flir=flir)
         except Exception as e:
             logging.error(
                     "error loading PureThermalCapture class: %s" % str(e), exc_info=True
                 )
     else:
         detector = MaskDetector(enable_mqtt=mqtt)
-        detector.run(display=display)
+    
+    detector.run(display=display)
 
 if __name__ == "__main__":
     run()
