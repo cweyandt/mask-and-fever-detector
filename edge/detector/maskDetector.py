@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import logging
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QMessageBox, QFileDialog, QProgressDialog
@@ -12,9 +13,22 @@ from absl import app
 from absl import flags
 from absl import logging
 from utils import *
+from pure_thermal import *
 
 # Get CAMERA_INDEX from environment, default to 0
 CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", 0))
+
+# Check environment to see if Thermal Capture mode is ative
+if int(os.getenv("THERMAL_ACTIVE", 0 )) == 1:
+    THERMAL_ACTIVE = True
+else:
+    THERMAL_ACTIVE = False
+logging.info(f'THERMAL_ACTIVE = {THERMAL_ACTIVE}')
+
+MQTT_HOST = os.getenv("MQTT_HOST", "mqtt_broker")
+MQTT_TOPIC = os.getenv("MQTT_TOPIC", "mask-detector")
+MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
+MQTT_KEEPALIVE = int(os.getenv("MQTT_KEEPALIVE", 60))
 
 FLAGS = flags.FLAGS
 flags.DEFINE_bool("use_yoloface", False, "Use yoloface for face detection")
@@ -51,7 +65,7 @@ flags.DEFINE_string(
 class QtCapture(QWidget):
     """Custom GUI for capturing video, performing facial point detections and displaying the results in the video"""
 
-    def __init__(self, mainwindow, mask_model, fps=30):
+    def __init__(self, mainwindow, mask_model, fps=30, enable_mqtt=True, flir=None):
         super(QWidget, self).__init__()
 
         self._mainwindow = mainwindow
@@ -63,14 +77,23 @@ class QtCapture(QWidget):
         self.setLayout(lay)
         self._selected_mask_model = mask_model
         self._model_loaded = self.loadResources()
- 
+        
         if FLAGS.use_yoloface:
             self.face_detection_fn = (
                 self.detect_face_with_yoloface
             )  # multiple face detection
         else:
             self.face_detection_fn = self.detect_face_default  # only one face
-
+        
+        self.mqtt_enabled = enable_mqtt
+        if self.mqtt_enabled:
+            self.mqtt_client = mqtt.Client()
+        self._flir = flir
+        self._isReady = self.loadResources()
+        if not THERMAL_ACTIVE:
+            self.cap = cv2.VideoCapture(CAMERA_INDEX)
+        self.message_count = 0
+        
     def setFPS(self, fps):
         """Adjust Frames Per Second"""
         self._fps = fps
