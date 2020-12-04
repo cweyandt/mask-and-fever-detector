@@ -125,7 +125,7 @@ class PureThermalCapture:
     def get(self):
         # Wait until a new frame has been returned by the thread callback
         while not self.newData:
-            pass
+            sleep(1)
         self.newData=False
 
         # Grab a copy of the most recent capture
@@ -155,7 +155,8 @@ class PureThermalCapture:
         n = 1
         if self.idx % n == 0:
             cv2.imwrite(f'output/purethermal{self.idx}.png',np.hstack((img, rgb)))
-        
+            logging.info(f'writing file /output/purethermal{self.idx}.png')
+
         # print("Returning PureThermal image with timestamp: " + str(ts))    
         return dict({'ts':data['ts'], 'frame':img, 'thermal':frame, 'rgb':rgb, 'maxVal':maxVal, 'maxLoc':maxLoc})
 
@@ -169,7 +170,7 @@ class PureThermalCapture:
 
     def py_frame_callback(self, frame, userptr):
         while not self.cap.isOpened():
-            pass
+            sleep(1)
 
         _,rgb = self.cap.read()
         ts = time()
@@ -184,7 +185,7 @@ class PureThermalCapture:
             return
 
         # Save the new frame with timestamp    
-        self.thermal = dict({'ts':ts, 'frame':data})
+        self.thermal = dict({'ts':ts, 'frame':data.copy()})
         self.rgb = rgb
         self.newData = True
 
