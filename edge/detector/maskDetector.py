@@ -256,10 +256,10 @@ class QtCapture(QWidget):
     def nextFrameSlot(self):
         """Capture the next frame, perform facal point detections, and display it"""
         if THERMAL_ACTIVE:
-                data = self._flir.get()
-                frame = data['rgb'] 
-            else:
-                ret, frame = self.cap.read()
+            data = self._flir.get()
+            frame = data['rgb'] 
+        else:
+            ret, frame = self.cap.read()
         # frame = imutils.resize(frame, width=400)
 
         if not ret:
