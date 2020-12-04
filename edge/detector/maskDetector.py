@@ -261,6 +261,7 @@ class QtCapture(QWidget):
 
     def nextFrameSlot(self):
         """Capture the next frame, perform facal point detections, and display it"""
+        logging.debug("in nextFrameSlot()")
         if THERMAL_ACTIVE:
             data = self._flir.get()
             frame = data['rgb'] 
@@ -287,7 +288,8 @@ class QtCapture(QWidget):
 
         if not self._model_loaded:
             self.loadResources()
-            
+        
+        logging.info("Creating timer")    
         self.timer = QTimer()
         self.timer.timeout.connect(self.nextFrameSlot)
         self.timer.start(1000.0 / self._fps)
@@ -314,7 +316,26 @@ class QtCapture(QWidget):
 
     def loadResources(self):
         """Load models & other resources"""
+        
+        # Check .env to see if FLIR camera is used
+        if THERMAL_ACTIVE:
+            try:
+                logging.info("Attempting PureThermal connection")
+                self._flir = PureThermalCapture(cameraID=CAMERA_INDEX)
+            except Exception as e:
+                logging.error(
+                        "error loading PureThermalCapture class: %s" % str(e), exc_info=True
+                    )
+        else:
+            logging.info("Creating video capture without thermal imaging")
+            self.cap = cv2.VideoCapture(CAMERA_INDEX)
+
+        # PureThermal2 FLIR capture
+        if THERMAL_ACTIVE:
+            self._flir.start()
+
         # (1) load face detection model(yoloface)
+        logging.info("Loading face detection model")
         if FLAGS.use_yoloface:
             self._yoloface = cv2.dnn.readNetFromDarknet(
                 FLAGS.yolo_model_cfg, FLAGS.yolo_model_weights
@@ -335,22 +356,6 @@ class QtCapture(QWidget):
         self._statusbar = self._mainwindow.statusBar()
         self._mainwindow.statusBar().showMessage(f"Loaded model: {self._model_name}")
         self._model_loaded = True
-        
-        # Check .env to see if FLIR camera is used
-        if THERMAL_ACTIVE:
-            try:
-                logging.info("Attempting PureThermal connection")
-                self._flir = PureThermalCapture(cameraID=CAMERA_INDEX)
-            except Exception as e:
-                logging.error(
-                        "error loading PureThermalCapture class: %s" % str(e), exc_info=True
-                    )
-        else:
-            self.cap = cv2.VideoCapture(CAMERA_INDEX)
-
-        # PureThermal2 FLIR capture
-        if THERMAL_ACTIVE:
-            self._flir.start()
 
         return True
 
@@ -413,7 +418,7 @@ class MaskDetector(QtWidgets.QMainWindow):
         logging.info(f"Loaded UI..")
         self._ui = Ui_MainWindow()
         self._ui.setupUi(self)
-        self.setWindowTitle("Dr.Keras - Mask Detector")
+        self.setWindowTitle("Mask Detector")
         self.populateCombobox()
         self._capture_widget = QtCapture(mainwindow=self, mask_model=self._ui.comboBox_model.currentText())
         self._ui.verticalLayout.addChildWidget(self._capture_widget)
@@ -449,8 +454,11 @@ class MaskDetector(QtWidgets.QMainWindow):
 
 
 def main(argv):
+    logging.debug("create QtWidgets.QApplication")
     qt_app = QtWidgets.QApplication([])
+    logging.debug("create MaskDetector()")
     maskdetector = MaskDetector()
+    logging.debug("calling masdetector.show()")
     maskdetector.show()
     sys.exit(qt_app.exec())
 
