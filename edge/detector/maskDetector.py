@@ -275,10 +275,16 @@ class QtCapture(QWidget):
         self.face_detection_fn(frame)
 
         color = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        if THERMAL_ACTIVE:
+            color = np.hstack((color, data['frame']))
+            width = 1200
+        else:
+            width = 600
         # display the image in QT pixmap
         img = QImage(
             color, color.shape[1], color.shape[0], QImage.Format_RGB888
-        ).scaled(600, 600, Qt.KeepAspectRatio)
+        ).scaled(width, 600, Qt.KeepAspectRatio)
         pix = QPixmap.fromImage(img)
         self.video_frame.setPixmap(pix)
 

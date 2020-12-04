@@ -152,7 +152,7 @@ class PureThermalCapture:
         draw_str(img, (10,20), f'{ctime(ts)}')   # add timestamp
         
         # save a copy of every n frames
-        n = 1
+        n = 10
         if self.idx % n == 0:
             cv2.imwrite(f'output/purethermal{self.idx}.png',np.hstack((img, rgb)))
             logging.info(f'writing file /output/purethermal{self.idx}.png')
