@@ -1,14 +1,16 @@
-from base64 import b64encode
-import logging
-import json
 import os
+import sys
+import json
+import logging
+from base64 import b64encode
 from threading import Thread
 
-from absl import flags
 import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
 from tensorflow.keras.models import load_model
+
+from absl import flags
 
 from utils import *
 from pure_thermal import *
@@ -20,17 +22,16 @@ if int(os.getenv("THERMAL_ACTIVE", 0 )) == 1:
     THERMAL_ACTIVE = True
 else:
     THERMAL_ACTIVE = False
-
 logging.info(f'THERMAL_ACTIVE = {THERMAL_ACTIVE}')
-FACE_MODEL = "model/deploy.prototxt"
-FACE_MODEL_WEIGHTS = "model/res10_300x300_ssd_iter_140000.caffemodel"
-MASK_NET_MODEL = "model/mask_detector.model"
 
 MQTT_HOST = os.getenv("MQTT_HOST", "mqtt_broker")
 MQTT_TOPIC = os.getenv("MQTT_TOPIC", "mask-detector")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 MQTT_KEEPALIVE = int(os.getenv("MQTT_KEEPALIVE", 60))
 
+FACE_MODEL = "model/deploy.prototxt"
+FACE_MODEL_WEIGHTS = "model/res10_300x300_ssd_iter_140000.caffemodel"
+MASK_NET_MODEL = "model/mask_detector.model"
 
 def adjust_box(w, h, box, change=0):
     (startX, startY, endX, endY) = box.astype("int")
@@ -52,6 +53,7 @@ def frame_to_png(frame):
 
 class MaskDetector:
     def __init__(self, fps=30, enable_mqtt=True, flir=None):
+        
         self._fps = fps
         self._model_loaded = False
         self.mqtt_enabled = enable_mqtt
