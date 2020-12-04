@@ -62,6 +62,12 @@ flags.DEFINE_string(
     "location of face detection model structure file",
 )
 
+flags.DEFINE_string(
+    "log_level",
+    "info",
+    "define logging level: DEBUG < INFO < WARNING < ERROR < CRITICAL",
+)
+
 # flags.DEFINE_string(
 #     "mask_net_model", "model/mask_detector.model", "location of mask detection model",
 # )
@@ -70,7 +76,7 @@ flags.DEFINE_string(
 class QtCapture(QWidget):
     """Custom GUI for capturing video, performing facial point detections and displaying the results in the video"""
 
-    def __init__(self, mainwindow, mask_model, fps=30, enable_mqtt=True, flir=None):
+    def __init__(self, mainwindow, mask_model, fps=6, enable_mqtt=True, flir=None):
         super(QWidget, self).__init__()
 
         self._mainwindow = mainwindow
@@ -258,6 +264,7 @@ class QtCapture(QWidget):
         if THERMAL_ACTIVE:
             data = self._flir.get()
             frame = data['rgb'] 
+            ret = True
         else:
             ret, frame = self.cap.read()
         # frame = imutils.resize(frame, width=400)
@@ -340,7 +347,7 @@ class QtCapture(QWidget):
                     )
         else:
             self.cap = cv2.VideoCapture(CAMERA_INDEX)
-            
+
         # PureThermal2 FLIR capture
         if THERMAL_ACTIVE:
             self._flir.start()
