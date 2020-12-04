@@ -99,8 +99,7 @@ class QtCapture(QWidget):
         self.mqtt_enabled = enable_mqtt
         if self.mqtt_enabled:
             self.mqtt_client = mqtt.Client()
-        self._flir = flir
-        self._isReady = self.loadResources()
+        
         if not THERMAL_ACTIVE:
             self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.message_count = 0
