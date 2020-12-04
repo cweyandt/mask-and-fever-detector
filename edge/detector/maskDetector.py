@@ -1,23 +1,28 @@
 import os
 import sys
 import json
-import logging
+from base64 import b64encode
+
+import cv2
+import numpy as np
+import paho.mqtt.client as mqtt
+from tensorflow.keras.models import load_model
+
+from absl import app
+from absl import flags
+from absl import logging
 
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget, QMessageBox, QFileDialog, QProgressDialog
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QImage, QPixmap
 from MainWindow import Ui_MainWindow
-from tensorflow.keras.models import load_model
-from absl import app
-from absl import flags
-from absl import logging
+
 from utils import *
 from pure_thermal import *
 
 # Get CAMERA_INDEX from environment, default to 0
 CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", 0))
-
 # Check environment to see if Thermal Capture mode is ative
 if int(os.getenv("THERMAL_ACTIVE", 0 )) == 1:
     THERMAL_ACTIVE = True
@@ -93,7 +98,7 @@ class QtCapture(QWidget):
         if not THERMAL_ACTIVE:
             self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.message_count = 0
-        
+
     def setFPS(self, fps):
         """Adjust Frames Per Second"""
         self._fps = fps
@@ -250,7 +255,11 @@ class QtCapture(QWidget):
 
     def nextFrameSlot(self):
         """Capture the next frame, perform facal point detections, and display it"""
-        ret, frame = self.cap.read()
+        if THERMAL_ACTIVE:
+                data = self._flir.get()
+                frame = data['rgb'] 
+            else:
+                ret, frame = self.cap.read()
         # frame = imutils.resize(frame, width=400)
 
         if not ret:
@@ -268,20 +277,27 @@ class QtCapture(QWidget):
 
     def start(self):
         """Start capturing data by setting up timer"""
+
         if not self._model_loaded:
             self.loadResources()
-        self.cap = cv2.VideoCapture(CAMERA_INDEX)
+            
         self.timer = QTimer()
         self.timer.timeout.connect(self.nextFrameSlot)
         self.timer.start(1000.0 / self._fps)
 
     def stop(self):
         """Stop capturing data """
-        self.cap.release()
+        if THERMAL_ACTIVE:
+            self._flir.stop()
+        else:
+            self.cap.release()
         self.timer.stop()
 
     def deleteLater(self):
-        self.cap.release()
+        if THERMAL_ACTIVE:
+            self._flir.stop()
+        else:
+            self.cap.release()
         super(QWidget, self).deleteLater()
 
     def updateModel(self, text):
@@ -312,6 +328,23 @@ class QtCapture(QWidget):
         self._statusbar = self._mainwindow.statusBar()
         self._mainwindow.statusBar().showMessage(f"Loaded model: {self._model_name}")
         self._model_loaded = True
+        
+        # Check .env to see if FLIR camera is used
+        if THERMAL_ACTIVE:
+            try:
+                logging.info("Attempting PureThermal connection")
+                self._flir = PureThermalCapture(cameraID=CAMERA_INDEX)
+            except Exception as e:
+                logging.error(
+                        "error loading PureThermalCapture class: %s" % str(e), exc_info=True
+                    )
+        else:
+            self.cap = cv2.VideoCapture(CAMERA_INDEX)
+            
+        # PureThermal2 FLIR capture
+        if THERMAL_ACTIVE:
+            self._flir.start()
+
         return True
 
 
