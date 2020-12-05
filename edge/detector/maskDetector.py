@@ -284,7 +284,7 @@ class QtCapture(QWidget):
         # display the image in QT pixmap
         img = QImage(
             color, color.shape[1], color.shape[0], QImage.Format_RGB888
-        )#.scaled(width, 600, Qt.KeepAspectRatio)
+        ).scaled(width, 600, Qt.KeepAspectRatio)
         pix = QPixmap.fromImage(img)
         self.video_frame.setPixmap(pix)
 
@@ -420,7 +420,7 @@ class MaskDetector(QtWidgets.QMainWindow):
 
     def setupUI(self):
         """setup UI"""
-        logging.info(f"Loaded UI..")
+        logging.info(f"Loading UI..")
         self._ui = Ui_MainWindow()
         if THERMAL_ACTIVE:
             self._ui.setupUi(self, widthMult=2)
