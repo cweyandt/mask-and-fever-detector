@@ -286,7 +286,7 @@ class QtCapture(QWidget):
         # display the image in QT pixmap
         img = QImage(
             color, color.shape[1], color.shape[0], QImage.Format_RGB888
-        ).scaled(width, 600, Qt.KeepAspectRatio)
+        ).scaled(width, 600, Qt.IgnoreAspectRatio)
         pix = QPixmap.fromImage(img)
         self.video_frame.setPixmap(pix)
 
