@@ -422,7 +422,11 @@ class MaskDetector(QtWidgets.QMainWindow):
         """setup UI"""
         logging.info(f"Loaded UI..")
         self._ui = Ui_MainWindow()
-        self._ui.setupUi(self)
+        if THERMAL_ACTIVE:
+            self._ui.setupUi(self, widthMult=2)
+        else:
+            self._ui.setupUi(self)
+            
         self.setWindowTitle("Mask Detector")
         self.populateCombobox()
         self._capture_widget = QtCapture(mainwindow=self, mask_model=self._ui.comboBox_model.currentText())
