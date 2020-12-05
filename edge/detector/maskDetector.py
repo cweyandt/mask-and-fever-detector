@@ -260,7 +260,6 @@ class QtCapture(QWidget):
 
     def nextFrameSlot(self):
         """Capture the next frame, perform facal point detections, and display it"""
-        logging.debug("in nextFrameSlot()")
         if THERMAL_ACTIVE:
             data = self._flir.get()
             frame = data['rgb'] 
@@ -282,11 +281,10 @@ class QtCapture(QWidget):
         else:
             width = 600
 
-        logging.debug(f'color.shape[1]: {color.shape[1]}, color.shape[0]: {color.shape[0]}')
         # display the image in QT pixmap
         img = QImage(
             color, color.shape[1], color.shape[0], QImage.Format_RGB888
-        ).scaled(width, 600, Qt.IgnoreAspectRatio)
+        )#.scaled(width, 600, Qt.KeepAspectRatio)
         pix = QPixmap.fromImage(img)
         self.video_frame.setPixmap(pix)
 
