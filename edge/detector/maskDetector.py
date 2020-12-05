@@ -424,7 +424,6 @@ class MaskDetector(QtWidgets.QMainWindow):
         self._ui = Ui_MainWindow()
         if THERMAL_ACTIVE:
             self._ui.setupUi(self, widthMult=2)
-            DEFAULT_MAIN_WINDOW_WIDTH *= 2
         else:
             self._ui.setupUi(self)
 
@@ -432,7 +431,10 @@ class MaskDetector(QtWidgets.QMainWindow):
         self.populateCombobox()
         self._capture_widget = QtCapture(mainwindow=self, mask_model=self._ui.comboBox_model.currentText())
         self._ui.verticalLayout.addChildWidget(self._capture_widget)
-        self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH, DEFAULT_MAIN_WINDOW_HEIGHT)
+        if THERMAL_ACTIVE:
+            self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH*2, DEFAULT_MAIN_WINDOW_HEIGHT)
+        else:
+            self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH, DEFAULT_MAIN_WINDOW_HEIGHT)
         self._ui.menubar.setVisible(True)
 
         # link events
