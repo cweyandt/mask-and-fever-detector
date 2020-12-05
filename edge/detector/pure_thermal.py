@@ -143,14 +143,17 @@ class PureThermalCapture:
         frame = cv2.resize(frame[:,:], (640, 480))
         rgb = cv2.resize(rgb[:,:], (640,480))
 
-        frame = align_images(frame, rbg)
-        
         # Find min and max temperatures within the radiometric data
         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(frame)
         
         # Convert radiometric data to normalized grayscale
         img = raw_to_8bit(frame) 
         
+        cv2.imwrite(f'output/align_flir_{self.idx}.png',img)
+        cv2.imwrite(f'output/align_rgb_{self.idx}.png',rgb)
+        img2 = align_images(img, rgb, debug=True)
+        cv2.imwrite(f'outout/aligned_{self.idx}.png', img2)
+
         # Add annotations to the image
         display_temperature(img, minVal, minLoc, (255, 0, 0))  # add min temp
         display_temperature(img, maxVal, maxLoc, (0, 0, 255))  # add max temp
