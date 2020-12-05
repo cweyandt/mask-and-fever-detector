@@ -281,6 +281,8 @@ class QtCapture(QWidget):
             width = 1200
         else:
             width = 600
+
+        logging.debug(f'color.shape[1]: {color.shape[1]}, color.shape[0]: {color.shape[0]}')
         # display the image in QT pixmap
         img = QImage(
             color, color.shape[1], color.shape[0], QImage.Format_RGB888
