@@ -424,9 +424,10 @@ class MaskDetector(QtWidgets.QMainWindow):
         self._ui = Ui_MainWindow()
         if THERMAL_ACTIVE:
             self._ui.setupUi(self, widthMult=2)
+            DEFAULT_MAIN_WINDOW_WIDTH *= 2
         else:
             self._ui.setupUi(self)
-            
+
         self.setWindowTitle("Mask Detector")
         self.populateCombobox()
         self._capture_widget = QtCapture(mainwindow=self, mask_model=self._ui.comboBox_model.currentText())
