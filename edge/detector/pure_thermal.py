@@ -24,7 +24,10 @@ import traceback
 from time import time, ctime, sleep
 import cv2
 import numpy as np
+
 from uvctypes import *
+from align_images import *
+
 import sys
 import logging
 import os 
@@ -139,6 +142,8 @@ class PureThermalCapture:
 
         frame = cv2.resize(frame[:,:], (640, 480))
         rgb = cv2.resize(rgb[:,:], (640,480))
+
+        frame = align_images(frame, rbg)
         
         # Find min and max temperatures within the radiometric data
         minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(frame)
