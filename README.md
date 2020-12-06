@@ -8,7 +8,7 @@ Combine mask detector, temperature measurement, and social distancing evaluation
 - An AWS account with CLI credentials configured
 
 **Software Dependencies:**
-- docker
+- docker (on macOS, enable Experimental Features in Docker Desktop preferences)
 - jq
 - make
 - python3
@@ -42,6 +42,7 @@ Building for multiple architectures simultaneously requires more configuration t
 
 - Docker with buildx and experimental features enabled
 - A buildx environment that can build both x86 and arm images
+	`$ make setup-buildx`
 - A dockerhub account since build and push happens in a single step
 
 If all prerequisites are met, run the following command to build all images with x86 and ARM architectures and push to dockerhub.

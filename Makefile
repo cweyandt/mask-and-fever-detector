@@ -1,7 +1,6 @@
 SHELL    = /bin/bash
 VENV     = .venv
 ARCH     = $(shell uname -m)
-BUILDX   = docker buildx build --push --platform linux/amd64,linux/arm64
 
 include .env
 export DOCKER_CLI_EXPERIMENTAL := enabled
@@ -13,12 +12,18 @@ export TF_VAR_instance_type    := $(AWS_INSTANCE_TYPE)
 export TF_VAR_key_name         := $(AWS_SSH_KEY_NAME)
 export TF_VAR_bucket_name      := $(AWS_S3_BUCKET_NAME)
 
+BUILDX   = docker buildx build --push --platform linux/amd64,linux/arm64 --build-arg REPO=$(DOCKER_REPO)
+
 ifeq ($(EDGE_ASK_PASS),True)
 	ASK_PASS = --ask-become-pass
 endif
 
 $(VENV):
 	python3 -mvenv $(VENV) && pip install -r requirements.txt
+
+.PHONY: setup-buildx
+setup-buildx:
+	docker buildx create --use --name build --node build --driver-opt network=host
 
 .PHONY: build-opencv
 build-opencv:
@@ -72,13 +77,13 @@ build-mqtt:
 
 .PHONY: buildx-mqtt
 buildx-mqtt:
-	cd cloud/mqtt-broker && $(BUILDX) -t $(DOCKER_REPO)/mqtt-broker .
+	cd cloud/mosquitto && $(BUILDX) -t $(DOCKER_REPO)/mqtt-broker .
 
 .PHONY: build-all
 build-all: build-opencv build-maskdetector build-processor build-forwarder build-metabase build-mqtt
 
 .PHONY: buildx-all
-buildx-all:  buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase buildx-mqtt
+buildx-all: buildx-opencv buildx-maskdetector buildx-processor buildx-forwarder buildx-metabase buildx-mqtt
 
 .PHONY: push-opencv
 push-opencv:
@@ -96,8 +101,12 @@ push-processor:
 push-metabase:
 	docker push $(DOCKER_REPO)/metabase-$(ARCH)
 
+.PHONY: push-mqtt
+push-mqtt:
+	docker push $(DOCKER_REPO)/mqtt-$(ARCH)
+
 .PHONY: push-all
-push-all: push-opencv push-maskdetector push-processor push-metabase
+push-all: push-opencv push-maskdetector push-processor push-metabase push-mqtt
 
 .PHONY: plan
 plan:
