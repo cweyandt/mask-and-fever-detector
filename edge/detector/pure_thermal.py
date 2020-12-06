@@ -149,10 +149,10 @@ class PureThermalCapture:
         # Convert radiometric data to normalized grayscale
         img = raw_to_8bit(frame) 
         
-        cv2.imwrite(f'output/align_flir_{self.idx}.png',img)
-        cv2.imwrite(f'output/align_rgb_{self.idx}.png',rgb)
-        img2 = align_images(img, rgb, debug=True)
-        cv2.imwrite(f'outout/aligned_{self.idx}.png', img2)
+        # cv2.imwrite(f'output/align_flir_{self.idx}.png',img)
+        # cv2.imwrite(f'output/align_rgb_{self.idx}.png',rgb)
+        # img2 = align_images(img, rgb, debug=True)
+        # cv2.imwrite(f'outout/aligned_{self.idx}.png', img2)
 
         # Add annotations to the image
         display_temperature(img, minVal, minLoc, (255, 0, 0))  # add min temp

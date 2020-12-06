@@ -132,7 +132,7 @@ def align_motion(image, template, number_of_iterations = 5000, termination_eps =
     # Convert images to grayscale
     im1_gray = cv2.cvtColor(im1,cv2.COLOR_BGR2GRAY)
     im2_gray = cv2.cvtColor(im2,cv2.COLOR_BGR2GRAY)
-    cv2.imshow("im1_gray/im2_gray",np.hstack(im1_gray,im2_gray)
+    cv2.imshow("im1_gray/im2_gray",np.hstack(im1_gray,im2_gray))
     cv2.waitKey(0)
     
     # Find size of image1
