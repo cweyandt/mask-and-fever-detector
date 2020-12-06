@@ -129,7 +129,7 @@ cloud-down:
 	cd infrastructure/terraform && \
 		terraform destroy -auto-approve --target=aws_instance.w251_image_server
 
-.PHONY: cloud-down
+.PHONY: cloud-down-all
 cloud-down-all:
 	cd infrastructure/terraform && terraform destroy -auto-approve
 
@@ -157,6 +157,24 @@ edge-down:
 	source $(VENV)/bin/activate && \
 	cd infrastructure/ansible && \
 	ansible-playbook deploy.yml --tags "stop" --limit $(EDGE_SERVER) -i inventory $(ASK_PASS)
+
+.PHONY: web-up
+web-up: $(VENV)
+	source $(VENV)/bin/activate && \
+	cd infrastructure/ansible && \
+	ansible-playbook deploy.yml --tags "start" --limit image_servers  -i inventory 
+	@echo -e "\n\nCaptured images can be viewed at the following URL:"
+	@echo -e "http://$(AWS_S3_BUCKET_NAME).s3-website-$(AWS_REGION).amazonaws.com"
+	@echo -e "\n\nMask detection stats can be viewed at the following URL:"
+	@echo -e "http://$$(jq -r '.outputs.image_server_public_ip.value' < infrastructure/terraform/terraform.tfstate):8080"
+	@echo -e "User:     admin@mask-detect.org"
+	@echo -e "Password: password123"
+
+.PHONY: web-down
+web-down:
+	source $(VENV)/bin/activate && \
+	cd infrastructure/ansible && \
+	ansible-playbook deploy.yml --tags "stop" --limit image_servers -i inventory 
 
 .PHONY: config-up
 config-up: $(VENV) ansible-inventory

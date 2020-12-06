@@ -105,8 +105,6 @@ class QtCapture(QWidget):
         if self.mqtt_enabled:
             self.mqtt_client = mqtt.Client()
         
-        if not THERMAL_ACTIVE:
-            self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.message_count = 0
 
     def setFPS(self, fps):
