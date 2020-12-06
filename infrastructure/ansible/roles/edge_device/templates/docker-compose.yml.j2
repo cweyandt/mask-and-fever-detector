@@ -7,9 +7,14 @@ services:
       - "/dev/video{{ lookup('env','CAMERA_INDEX') }}:/dev/video{{ lookup('env','CAMERA_INDEX') }}"
     volumes:
       - "/dev:/dev"
+      - "/tmp:/tmp"
     privileged: true
+    stdin_open: true
+    tty: true
     depends_on:
       - mqtt_broker
+    environment:
+      - DISPLAY:
     environment:
       MQTT_URL: mqtt://user:password@mqtt_broker:1883
       CAMERA_INDEX:  {{ lookup('env','CAMERA_INDEX') }}

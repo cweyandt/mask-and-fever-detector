@@ -63,7 +63,7 @@ flags.DEFINE_string(
 )
 
 flags.DEFINE_string(
-    "log_level",
+    "log-level",
     "info",
     "define logging level: DEBUG < INFO < WARNING < ERROR < CRITICAL",
 )
@@ -86,6 +86,11 @@ class QtCapture(QWidget):
         lay = QVBoxLayout()
         lay.addWidget(self.video_frame)
         self.setLayout(lay)
+        if THERMAL_ACTIVE:
+            self.setFixedSize(1280,480)
+        else:
+            self.setFixedSize(640,480)
+
         self._selected_mask_model = mask_model
         self._model_loaded = self.loadResources()
         
