@@ -71,6 +71,8 @@ function viewAlbum(albumName) {
     var href = this.request.httpRequest.endpoint.href;
     var bucketUrl = href + albumBucketName + '/';
 
+    data.Contents = data.Contents.reverse();
+
     var photos = data.Contents.map(function(photo) {
       var photoKey = photo.Key;
       var photoUrl = bucketUrl + encodeURIComponent(photoKey);

@@ -140,6 +140,24 @@ ansible-inventory:
 		-e "s/EDGE_USER/$(EDGE_USER)/" \
 		infrastructure/ansible/inventory.tmpl > infrastructure/ansible/inventory
 
+.PHONY: edge-up
+edge-up: $(VENV)
+	source $(VENV)/bin/activate && \
+	cd infrastructure/ansible && \
+	ansible-playbook deploy.yml --tags "start" --limit $(EDGE_SERVER) -i inventory $(ASK_PASS)
+	@echo -e "\n\nCaptured images can be viewed at the following URL:"
+	@echo -e "http://$(AWS_S3_BUCKET_NAME).s3-website-$(AWS_REGION).amazonaws.com"
+	@echo -e "\n\nMask detection stats can be viewed at the following URL:"
+	@echo -e "http://$$(jq -r '.outputs.image_server_public_ip.value' < infrastructure/terraform/terraform.tfstate):8080"
+	@echo -e "User:     admin@mask-detect.org"
+	@echo -e "Password: password123"
+
+.PHONY: edge-down
+edge-down:
+	source $(VENV)/bin/activate && \
+	cd infrastructure/ansible && \
+	ansible-playbook deploy.yml --tags "stop" --limit $(EDGE_SERVER) -i inventory $(ASK_PASS)
+
 .PHONY: config-up
 config-up: $(VENV) ansible-inventory
 	source $(VENV)/bin/activate && \
