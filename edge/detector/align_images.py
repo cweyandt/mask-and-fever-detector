@@ -22,6 +22,7 @@ def main():
         # align the images
         print("[INFO] aligning images...")
         aligned = align_images(image, template, debug=True)
+        #aligned = align_motion()
 
         # resize both the aligned and template images so we can easily
         # visualize them on our screen
@@ -45,7 +46,15 @@ def main():
         cv2.imshow("Image Alignment Overlay", output)
         cv2.waitKey(0)
 
-
+def auto_canny(image, sigma=0.33):
+        # compute the median of the single channel pixel intensities
+        v = np.median(image)
+        # apply automatic Canny edge detection using the computed median
+        lower = int(max(0, (1.0 - sigma) * v))
+        upper = int(min(255, (1.0 + sigma) * v))
+        edged = cv2.Canny(image, lower, upper)
+        # return the edged image
+        return edged
 
 def align_images(image, template, maxFeatures=500, keepPercent=0.2,
         debug=False):
@@ -53,15 +62,22 @@ def align_images(image, template, maxFeatures=500, keepPercent=0.2,
         imageGray = image #cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         templateGray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
 
-        cv2.imshow("imageGray", imageGray)
-        cv2.imshow("templateGray", templateGray)
+        # cv2.imshow("imageGray", imageGray)
+        # cv2.imshow("templateGray", templateGray)
+        # cv2.waitKey(0)
+
+        imageEdges = cv2.Canny(imageGray, 20,30)
+        templateEdges = auto_canny(templateGray, sigma=0.2)
+
+        cv2.imshow("imageEdges", imageEdges)
+        cv2.imshow("templateEdges", templateEdges)
         cv2.waitKey(0)
 
         # use ORB to detect keypoints and extract (binary) local
         # invariant features
         orb = cv2.ORB_create(maxFeatures)
-        (kpsA, descsA) = orb.detectAndCompute(imageGray, None)
-        (kpsB, descsB) = orb.detectAndCompute(templateGray, None)
+        (kpsA, descsA) = orb.detectAndCompute(imageEdges, None)
+        (kpsB, descsB) = orb.detectAndCompute(templateEdges, None)
         # match the features
         method = cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING
         matcher = cv2.DescriptorMatcher_create(method)
@@ -102,6 +118,56 @@ def align_images(image, template, maxFeatures=500, keepPercent=0.2,
         # return the aligned image
         return aligned
 
+def align_motion(image, template, number_of_iterations = 5000, termination_eps = 1e-10):
+ 
+    # number_of_iterations:  number of iterations.
+    # termination_eps:  threshold of the increment in the correlation coefficient between two iterations
+    
+    # Read the images to be aligned
+    im1 =  image
+    im2 =  template
+    cv2.imshow("im1/im2",np.hstack(im1,im2))
+    cv2.waitKey(0)
+    
+    # Convert images to grayscale
+    im1_gray = cv2.cvtColor(im1,cv2.COLOR_BGR2GRAY)
+    im2_gray = cv2.cvtColor(im2,cv2.COLOR_BGR2GRAY)
+    cv2.imshow("im1_gray/im2_gray",np.hstack(im1_gray,im2_gray)
+    cv2.waitKey(0)
+    
+    # Find size of image1
+    sz = im1.shape
+
+    # Define the motion model
+    warp_mode = cv2.MOTION_TRANSLATION
+
+    # Define 2x3 or 3x3 matrices and initialize the matrix to identity
+    if warp_mode == cv2.MOTION_HOMOGRAPHY :
+        warp_matrix = np.eye(3, 3, dtype=np.float32)
+    else :
+        warp_matrix = np.eye(2, 3, dtype=np.float32)
+
+    # Define termination criteria
+    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, number_of_iterations,  termination_eps)
+
+    # Run the ECC algorithm. The results are stored in warp_matrix.
+    (cc, warp_matrix) = cv2.findTransformECC (im1_gray,im2_gray,warp_matrix, warp_mode, criteria, inputMask = None, gaussFiltSize=3)
+
+    if warp_mode == cv2.MOTION_HOMOGRAPHY :
+        # Use warpPerspective for Homography 
+        im2_aligned = cv2.warpPerspective (im2, warp_matrix, (sz[1],sz[0]), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
+    else :
+        # Use warpAffine for Translation, Euclidean and Affine
+        im2_aligned = cv2.warpAffine(im2, warp_matrix, (sz[1],sz[0]), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP);
+
+    # Show final results
+    cv2.imshow("Image 1", im1)
+    cv2.imshow("Image 2", im2)
+    cv2.imshow("Aligned Image 2", im2_aligned)
+    cv2.waitKey(0)
+
+
 
 if __name__ == "__main__":
     main()
+
