@@ -123,7 +123,10 @@ class MaskDetector:
             label = "mask" if mask > withoutMask else "no_mask"
             logging.debug("detected label: %s" % label)
             png_image = frame_to_png(face)
-            full_image = frame_to_png(frame)
+            if THERMAL_ACTIVE:
+                full_image = frame_to_png(np.hstack(frame, data['frame']))
+            else:
+                full_image = frame_to_png(frame)
             if display:
                 cv2.imshow("frame", face)
             if self.mqtt_enabled:
