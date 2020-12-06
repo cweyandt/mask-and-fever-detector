@@ -375,7 +375,10 @@ class MaskDetector(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setupUI()
+        if THERMAL_ACTIVE:
+            self.setupUI(widthMult=1.7)
+        else:
+            self.setupUI(widthMult=1)
 
     def updateModel(self):
         new_model_map = get_model_list()
@@ -423,23 +426,17 @@ class MaskDetector(QtWidgets.QMainWindow):
             self._mask_models = modelList
             self._ui.comboBox_model.addItems(list(self._mask_models.keys()))
 
-    def setupUI(self):
+    def setupUI(self, widthMult=1):
         """setup UI"""
         logging.info(f"Loading UI..")
         self._ui = Ui_MainWindow()
-        if THERMAL_ACTIVE:
-            self._ui.setupUi(self, widthMult=2)
-        else:
-            self._ui.setupUi(self)
+        self._ui.setupUi(self, widthMult=widthMulti)
 
         self.setWindowTitle("Mask Detector")
         self.populateCombobox()
         self._capture_widget = QtCapture(mainwindow=self, mask_model=self._ui.comboBox_model.currentText())
         self._ui.verticalLayout.addChildWidget(self._capture_widget)
-        if THERMAL_ACTIVE:
-            self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH*2, DEFAULT_MAIN_WINDOW_HEIGHT)
-        else:
-            self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH, DEFAULT_MAIN_WINDOW_HEIGHT)
+        self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH*widthMult, DEFAULT_MAIN_WINDOW_HEIGHT)
         self._ui.menubar.setVisible(True)
 
         # link events
