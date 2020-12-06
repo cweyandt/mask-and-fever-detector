@@ -14,8 +14,7 @@ services:
     depends_on:
       - mqtt_broker
     environment:
-      - DISPLAY:
-    environment:
+      DISPLAY: {{ lookup('env', 'DISPLAY') }}
       MQTT_URL: mqtt://user:password@mqtt_broker:1883
       CAMERA_INDEX:  {{ lookup('env','CAMERA_INDEX') }}
       THERMAL_ACTIVE: {{ lookup('env','THERMAL_ACTIVE') }}
