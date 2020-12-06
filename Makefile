@@ -38,8 +38,7 @@ build-opencv:
 
 .PHONY: buildx-opencv
 buildx-opencv:
-	#cd opencv && docker build -t $(DOCKER_REPO)/opencv-tensorflow-$(ARCH) .
-	docker pull $(DOCKER_REPO)/opencv-tensorflow-x86_64
+	cd opencv && docker build -t $(DOCKER_REPO)/opencv-tensorflow-$(ARCH) .
 	cd opencv && docker buildx build --push --platform linux/arm64 -t $(DOCKER_REPO)/opencv-tensorflow-aarch64 -f Dockerfile.cuda .
 	docker push $(DOCKER_REPO)/opencv-tensorflow-$(ARCH)
 	docker pull $(DOCKER_REPO)/opencv-tensorflow-aarch64
