@@ -19,7 +19,8 @@ services:
       MQTT_TOPIC: mask-detector
       
     #command: ["./main.py", "maskDetector", "--noninteractive", "--log-level", "debug"]
-    command: ["python3", "./maskDetector.py"]
+    command: ["./main.py", "maskDetector"]
+    #command: ["python3", "./maskDetector.py"]
 
   mqtt_broker:
     image: cweyandt/mqtt-broker:latest

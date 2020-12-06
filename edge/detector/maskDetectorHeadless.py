@@ -124,7 +124,7 @@ class MaskDetector:
             logging.debug("detected label: %s" % label)
             png_image = frame_to_png(face)
             if THERMAL_ACTIVE:
-                full_image = frame_to_png(np.hstack((frame, data['frame']))
+                full_image = frame_to_png(np.hstack((frame, data['frame'])))
             else:
                 full_image = frame_to_png(frame)
             if display:
