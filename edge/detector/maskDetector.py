@@ -430,7 +430,7 @@ class MaskDetector(QtWidgets.QMainWindow):
         """setup UI"""
         logging.info(f"Loading UI..")
         self._ui = Ui_MainWindow()
-        self._ui.setupUi(self, widthMult=widthMulti)
+        self._ui.setupUi(self, widthMult=widthMult)
 
         self.setWindowTitle("Mask Detector")
         self.populateCombobox()
