@@ -71,28 +71,32 @@ function viewAlbum(albumName) {
     var href = this.request.httpRequest.endpoint.href;
     var bucketUrl = href + albumBucketName + '/';
 
+    // reverse the list to show neweset images first (because names are timestamps)
     data.Contents = data.Contents.reverse();
 
     var photos = data.Contents.map(function(photo) {
       var photoKey = photo.Key;
       var photoUrl = bucketUrl + encodeURIComponent(photoKey);
       return getHtml([
-        '<span>',
-          '<div>',
-            '<br/>',
-            '<img style="width:128px;height:128px;" src="' + photoUrl + '"/>',
-          '</div>',
-          '<div>',
-            '<span>',
-              photoKey.replace(albumPhotosKey, ''),
-            '</span>',
-          '</div>',
-        '</span>',
+        '<a href="' + photoUrl + '">',
+          '<img src="' + photoUrl + '" style="width:100%">',
+        '</a>'
       ]);
     });
+
+    var cols = [[],[],[],[]];
+    for (var i = 0; i < photos.length; i++) {
+      cols[i%4].push(photos[i])
+    }
+    console.log(photos)
+    console.log('photos.length: ', photos.length)
+    console.log(cols)
+    console.log(cols[0])
+
     var message = photos.length ?
       '<p>The following photos are present.</p>' :
       '<p>There are no photos in this image capture.</p>';
+    
     var htmlTemplate = [
       '<div>',
         '<button onclick="listAlbums()">',
@@ -103,8 +107,19 @@ function viewAlbum(albumName) {
         'Image Source: ' + albumName,
       '</h2>',
       message,
-      '<div>',
-        getHtml(photos),
+      '<div class="row">',
+        '<div class="column">',
+          getHtml(cols[0]),
+        '</div>',
+        '<div class="column">',
+          getHtml(cols[1]),
+        '</div>',
+        '<div class="column">',
+          getHtml(cols[2]),
+        '</div>',
+        '<div class="column">',
+          getHtml(cols[3]),
+        '</div>',
       '</div>',
       '<h2>',
         'End of Image Captures: ' + albumName,
@@ -116,6 +131,6 @@ function viewAlbum(albumName) {
       '</div>',
     ]
     document.getElementById('viewer').innerHTML = getHtml(htmlTemplate);
-    document.getElementsByTagName('img')[0].setAttribute('style', 'display:none;');
+    // document.getElementsByTagName('img')[0].setAttribute('style', 'display:none;');
   });
 }

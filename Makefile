@@ -161,7 +161,7 @@ edge-down:
 web-up: $(VENV)
 	source $(VENV)/bin/activate && \
 	cd infrastructure/ansible && \
-	ansible-playbook deploy.yml --tags "start" --limit image_servers  -i inventory 
+	ansible-playbook deploy.yml --tags "start"  -i localhost
 	@echo -e "\n\nCaptured images can be viewed at the following URL:"
 	@echo -e "http://$(AWS_S3_BUCKET_NAME).s3-website-$(AWS_REGION).amazonaws.com"
 	@echo -e "\n\nMask detection stats can be viewed at the following URL:"
@@ -173,7 +173,7 @@ web-up: $(VENV)
 web-down:
 	source $(VENV)/bin/activate && \
 	cd infrastructure/ansible && \
-	ansible-playbook deploy.yml --tags "stop" --limit image_servers -i inventory 
+	ansible-playbook deploy.yml --tags "stop" -i localhost 
 
 .PHONY: config-up
 config-up: $(VENV) ansible-inventory
