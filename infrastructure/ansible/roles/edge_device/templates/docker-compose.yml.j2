@@ -19,7 +19,8 @@ services:
       CAMERA_INDEX:  {{ lookup('env','CAMERA_INDEX') }}
       THERMAL_ACTIVE: {{ lookup('env','THERMAL_ACTIVE') }}
       MQTT_TOPIC: {{ lookup('env','MQTT_TOPIC') }}
-    command: ["./main.py", "maskDetector", "--noninteractive", "--log-level", "debug"]
+    #command: ["./main.py", "maskDetector", "--noninteractive", "--log-level", "debug"]
+    command: ["./main.py", "maskDetector", "--log-level", "debug"]
 
   mqtt_broker:
     image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker:latest

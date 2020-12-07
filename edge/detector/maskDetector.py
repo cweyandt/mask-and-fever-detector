@@ -105,6 +105,7 @@ class QtCapture(QWidget):
         self.mqtt_enabled = enable_mqtt
         if self.mqtt_enabled:
             self.mqtt_client = mqtt.Client()
+            logging.info('Connected to mqtt broker')
         
         self.message_count = 0
 
