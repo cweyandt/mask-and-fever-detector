@@ -33,23 +33,6 @@ FACE_MODEL = "model/deploy.prototxt"
 FACE_MODEL_WEIGHTS = "model/res10_300x300_ssd_iter_140000.caffemodel"
 MASK_NET_MODEL = "model/mask_detector.model"
 
-def adjust_box(w, h, box, change=0):
-    (startX, startY, endX, endY) = box.astype("int")
-    startX -= change
-    startY -= change
-    endX += change
-    endY += change
-
-    # ensure the bounding boxes fall within the dimensions of the frame
-    (startX, startY) = (max(0, startX), max(0, startY))
-    (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
-    return (startX, startY, endX, endY)
-
-
-def frame_to_png(frame):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    return cv2.imencode(".png", gray)[1].tobytes()
-
 
 class MaskDetector:
     def __init__(self, fps=30, enable_mqtt=True, flir=None):
