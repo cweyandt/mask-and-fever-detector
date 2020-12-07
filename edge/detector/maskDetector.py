@@ -94,7 +94,7 @@ class QtCapture(QWidget):
 
         self._selected_mask_model = mask_model
 
-            self.mqtt_enabled = enable_mqtt
+        self.mqtt_enabled = enable_mqtt
         if self.mqtt_enabled:
             self.mqtt_client = mqtt.Client()
         
