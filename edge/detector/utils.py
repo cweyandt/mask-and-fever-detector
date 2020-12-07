@@ -232,7 +232,7 @@ def adjust_box(w, h, box, change=0):
 
 
 def frame_to_png(frame):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     return cv2.imencode(".png", gray)[1].tobytes()
 
 def refined_box(left, top, width, height):
