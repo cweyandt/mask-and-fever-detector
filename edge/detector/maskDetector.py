@@ -170,10 +170,10 @@ class QtCapture(QWidget):
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
         if THERMAL_ACTIVE:
-            display_temperature(frame, data['maxVal', data['maxLoc'], COLOR_YELLOW)  # add max temp
+            display_temperature(frame, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
 
         # Send message to mqtt if enabled and face is found
-        if len(faces) > 0 && self.mqtt_enabled:
+        if len(faces) > 0 and self.mqtt_enabled:
             frame = frame_to_png(frame)
             Thread(
                 target=self.publish_message, args=(label, frame, frame, data)
@@ -271,7 +271,7 @@ class QtCapture(QWidget):
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
             if THERMAL_ACTIVE:
-                display_temperature(frame, data['maxVal', data['maxLoc'], COLOR_YELLOW)  # add max temp
+                display_temperature(frame, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
 
             # Send message to mqtt if enabled and face is found
             if self.mqtt_enabled:
@@ -313,7 +313,7 @@ class QtCapture(QWidget):
         draw_str(color, (10,20), f'{ts}')   # add timestamp
         
         if THERMAL_ACTIVE:
-            display_temperature(color, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
+            # display_temperature(color, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
             color = np.hstack((color, data['frame']))
             width = 1200
         else:
