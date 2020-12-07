@@ -164,15 +164,16 @@ class QtCapture(QWidget):
                 label_img,
                 (startX, startY - 10),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.45,
+                1.5,
                 color,
-                2,
+                thickness=3,
+                lineType=cv2.LINE_AA
             )
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
         if THERMAL_ACTIVE:
             display_temperature(frame, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
-
+            draw_str(img, (10,20), f'{ctime(data['ts'])}')   # add timestamp
         # Send message to mqtt if enabled and face is found
         if len(faces) > 0 and self.mqtt_enabled:
             frame = frame_to_png(frame)
@@ -266,15 +267,16 @@ class QtCapture(QWidget):
                     label_img,
                     (startX, startY - 10),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    2.0,
+                    1.5,
                     color,
-                    5,
+                    thickness=3,
+                    lineType=cv2.LINE_AA
                 )
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
             if THERMAL_ACTIVE:
                 display_temperature(frame, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
-
+                draw_str(img, (10,20), f'{ctime(data['ts'])}')   # add timestamp
             # Send message to mqtt if enabled and face is found
             if self.mqtt_enabled:
                 frame = frame_to_png(frame)
