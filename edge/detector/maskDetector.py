@@ -142,7 +142,7 @@ class QtCapture(QWidget):
 
         # loop over the detected face locations and their corresponding
         # locations
-        for (box, pred) in zip(locs, preds):
+        for (box, pred, face) in zip(locs, preds, faces):
             # unpack the bounding box and predictions
             (startX, startY, endX, endY) = box
             (mask, withoutMask) = pred
@@ -156,8 +156,9 @@ class QtCapture(QWidget):
             label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
 
             # detect maximum temperature within the bouding box
-            minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data['thermal'][startX:endX,startY:endY])
-            display_temperature(frame, maxVal, maxLoc, COLOR_YELLOW)  # add max temp
+            minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data['thermal'][startY:endY,startX:endX])
+            maxLoc = (maxLoc[0]+startY, maxLoc[1]+startX)
+            display_temperature(face, maxVal, maxLoc, COLOR_YELLOW)  # add max temp
 
             # display the label and bounding box rectangle on the output
             # frame
@@ -171,6 +172,13 @@ class QtCapture(QWidget):
                 2,
             )
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
+
+            png_image = frame_to_png(face)
+            frame = frame_to_png
+            if self.mqtt_enabled:
+                Thread(
+                    target=self.publish_message, args=(label, png_image, frame, data)
+                ).start()
 
         return
 
