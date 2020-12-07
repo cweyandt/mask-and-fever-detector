@@ -157,7 +157,7 @@ class PureThermalCapture:
         # Add annotations to the image
         display_temperature(img, minVal, minLoc, (255, 0, 0))  # add min temp
         display_temperature(img, maxVal, maxLoc, (0, 0, 255))  # add max temp
-        draw_str(img, (10,20), f'{ctime(ts)}')   # add timestamp
+        draw_str(img, (10,20), ts)   # add timestamp
         
         # save a copy of every n frames
         n = 10
@@ -165,7 +165,7 @@ class PureThermalCapture:
             cv2.imwrite(f'output/purethermal{self.idx}.png',np.hstack((img, rgb)))
             logging.info(f'writing file /output/purethermal{self.idx}.png')
 
-        # print("Returning PureThermal image with timestamp: " + str(ts))    
+        # print("Returning PureThermal image with timestamp: " + ts)    
         return dict({'ts':data['ts'], 'frame':img, 'thermal':frame, 'rgb':rgb, 'maxVal':maxVal, 'maxLoc':maxLoc})
 
     def stop(self):
@@ -181,7 +181,7 @@ class PureThermalCapture:
             sleep(1)
 
         _,rgb = self.cap.read()
-        ts = localtime()
+        ts = asctime()
         array_pointer = cast(frame.contents.data, POINTER(c_uint16 * (frame.contents.width * frame.contents.height)))
         data = np.frombuffer(
             array_pointer.contents, dtype=np.dtype(np.uint16)
