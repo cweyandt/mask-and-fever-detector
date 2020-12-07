@@ -111,7 +111,7 @@ class QtCapture(QWidget):
         """Adjust Frames Per Second"""
         self._fps = fps
 
-    def detect_face_with_yoloface(self, frame):
+    def detect_face_with_yoloface(self, frame, data=None):
         # detect face using yoloface
         # (1) preprocess input using blobFromImage fn
         # - resize it (IMG_WIDTH, IMG_HEIGHT)
@@ -154,6 +154,10 @@ class QtCapture(QWidget):
 
             # include the probability in the label
             label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+
+            # detect maximum temperature within the bouding box
+            minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data['thermal'][startX:endX,startY:endY])
+            display_temperature(frame, maxVal, maxLoc, COLOR_YELLOW)  # add max temp
 
             # display the label and bounding box rectangle on the output
             # frame
@@ -269,12 +273,13 @@ class QtCapture(QWidget):
             ret = True
         else:
             ret, frame = self.cap.read()
+            data = None
         # frame = imutils.resize(frame, width=400)
 
         if not ret:
             self.stop()
         # (1) process frame
-        self.face_detection_fn(frame)
+        self.face_detection_fn(frame, data)
 
         color = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -295,6 +300,33 @@ class QtCapture(QWidget):
         ).scaled(width, 600, Qt.KeepAspectRatio)
         pix = QPixmap.fromImage(img)
         self.video_frame.setPixmap(pix)
+
+    def publish_message(self, detection_type, face_frame, full_frame, data=None):
+        self.message_count += 1
+        logging.debug("publishing message %d to mqtt", self.message_count)
+        # topic = f"{detection_type}/png"
+        # self.mqtt_client.publish(topic, frame)
+        if THERMAL_ACTIVE:
+            msg = {
+                "detection_type": detection_type,
+                "image_encoding": "png",
+                "frame": b64encode(face_frame).decode(),
+                "full_frame": b64encode(full_frame).decode(),
+                "thermal_frame": b64encode(data['frame']).decode(),
+                "thermal_data": b64encode(data['thermal']).decode(),
+                "timestamp": data['ts'],
+                "maxVal": data['maxVal'],
+                "maxLoc": data['maxLoc'], 
+            }
+        else:
+            msg = {
+                "detection_type": detection_type,
+                "image_encoding": "png",
+                "frame": b64encode(face_frame).decode(),
+                "full_frame": b64encode(full_frame).decode(),
+            }
+
+        self.mqtt_client.publish(MQTT_TOPIC, json.dumps(msg))
 
     def start(self):
         """Start capturing data by setting up timer"""
