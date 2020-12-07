@@ -157,14 +157,7 @@ class QtCapture(QWidget):
             # include the probability in the label
             label_img = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
 
-            if THERMAL_ACTIVE:
-                # detect maximum temperature within the bouding box
-                minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data['thermal'][startY:endY,startX:endX])
-                maxLoc = (maxLoc[0]+startY, maxLoc[1]+startX)
-                display_temperature(face, maxVal, maxLoc, COLOR_YELLOW)  # add max temp
-
-            # display the label and bounding box rectangle on the output
-            # frame
+            # display the label and bounding box rectangle on the output frame
             cv2.putText(
                 frame,
                 label_img,
@@ -176,14 +169,17 @@ class QtCapture(QWidget):
             )
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
-            png_image = frame_to_png(face)
-            frame2 = frame_to_png(frame)
-            if self.mqtt_enabled:
-                Thread(
-                    target=self.publish_message, args=(label, png_image, frame2, data)
-                ).start()
+        if THERMAL_ACTIVE:
+            display_temperature(frame, data['maxVal', data['maxLoc'], COLOR_YELLOW)  # add max temp
 
-        return
+        # Send message to mqtt if enabled and face is found
+        if len(faces) > 0 && self.mqtt_enabled:
+            frame = frame_to_png(frame)
+            Thread(
+                target=self.publish_message, args=(label, frame, frame, data)
+            ).start()
+
+        return len(faces)
 
     def detect_face_default(self, frame, data=None):
         # grab the dimensions of the frame and then construct a blob
@@ -261,12 +257,6 @@ class QtCapture(QWidget):
                 # include the probability in the label
                 label_img = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
 
-                if THERMAL_ACTIVE:
-                    # detect maximum temperature within the bouding box
-                    minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(data['thermal'][startY:endY,startX:endX])
-                    maxLoc = (maxLoc[0]+startY, maxLoc[1]+startX)
-                    display_temperature(face, maxVal, maxLoc, COLOR_YELLOW)  # add max temp
-
                 # display the label and bounding box rectangle on the output
                 # frame
                 cv2.putText(
@@ -280,13 +270,17 @@ class QtCapture(QWidget):
                 )
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
-                png_image = frame_to_png(face)
-                frame2 = frame_to_png(frame)
-                if self.mqtt_enabled:
-                    Thread(
-                        target=self.publish_message, args=(label, png_image, face2, data)
-                    ).start()
-        return
+            if THERMAL_ACTIVE:
+                display_temperature(frame, data['maxVal', data['maxLoc'], COLOR_YELLOW)  # add max temp
+
+            # Send message to mqtt if enabled and face is found
+            if self.mqtt_enabled:
+                frame = frame_to_png(frame)
+                Thread(
+                    target=self.publish_message, args=(label, frame, frame, data)
+                ).start()
+
+        return len(faces)
 
     def nextFrameSlot(self):
         """Capture the next frame, perform facal point detections, and display it"""
@@ -301,17 +295,25 @@ class QtCapture(QWidget):
 
         if not ret:
             self.stop()
+
         # (1) process frame
-        self.face_detection_fn(frame, data)
+        try:
+            faces_detected = self.face_detection_fn(frame, data)
+        # broad except here so that errors don't crash detection
+        except Exception as e:
+            logging.error(
+                "error running mask detection: %s" % str(e), exc_info=True
+            )
 
         color = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         ts = ctime(data['ts'])
 
-        display_temperature(color, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
+        
         draw_str(color, (10,20), f'{ts}')   # add timestamp
         
         if THERMAL_ACTIVE:
+            display_temperature(color, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
             color = np.hstack((color, data['frame']))
             width = 1200
         else:
