@@ -4,23 +4,23 @@ services:
   mask_detector:
     image: cweyandt/maskdetector:latest
     devices:
-      - "/dev/video0:/dev/video0"
+      - "/dev/video1:/dev/video1"
+    volumes:
+      - "/dev:/dev"
+      - "/tmp:/tmp"
+    privileged: true
+    stdin_open: true
+    tty: true
     depends_on:
       - mqtt_broker
-    volumes:
-      - /dev:/dev 
-      - /tmp:/tmp
-    privileged: true   
-    environment:    
-      DISPLAY: "true"
+    environment:
+      DISPLAY: 
       MQTT_URL: mqtt://user:password@mqtt_broker:1883
-      CAMERA_INDEX:  0
+      CAMERA_INDEX:  1
       THERMAL_ACTIVE: 1
       MQTT_TOPIC: mask-detector
-      
     #command: ["./main.py", "maskDetector", "--noninteractive", "--log-level", "debug"]
-    command: ["./main.py", "maskDetector"]
-    #command: ["python3", "./maskDetector.py"]
+    command: ["./main.py", "maskDetector", "--log-level", "debug"]
 
   mqtt_broker:
     image: cweyandt/mqtt-broker:latest
@@ -35,6 +35,6 @@ services:
       LOG_LEVEL: DEBUG
       LOCAL_MQTT_HOST: mqtt_broker
       LOCAL_MQTT_PORT: 1883
-      REMOTE_MQTT_HOST: "52.33.205.60"
+      REMOTE_MQTT_HOST: "34.210.77.165"
       REMOTE_MQTT_PORT: 1883
       MINIMUM_COMMUTATIVE_IMAGE_DIFF: 0.15
