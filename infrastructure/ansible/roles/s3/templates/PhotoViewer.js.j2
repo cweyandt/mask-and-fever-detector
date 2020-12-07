@@ -79,7 +79,7 @@ function viewAlbum(albumName) {
       var photoUrl = bucketUrl + encodeURIComponent(photoKey);
       return getHtml([
         '<a href="' + photoUrl + '">',
-          '<img src="' + photoUrl + '" style="width:100%">',
+          '<img src="' + photoUrl + '" style="width:auto;height:auto;max-width:100%;max-height:224px;">',
         '</a>'
       ]);
     });
