@@ -182,7 +182,7 @@ class QtCapture(QWidget):
 
         return
 
-    def detect_face_default(self, frame):
+    def detect_face_default(self, frame, data=None):
         # grab the dimensions of the frame and then construct a blob
         # from it
         (h, w) = frame.shape[:2]
