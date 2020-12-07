@@ -174,11 +174,11 @@ class QtCapture(QWidget):
             )
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
-            png_image = frame_to_png(face)
-            frame2 = frame_to_png(frame)
+            # png_image = frame_to_png(face)
+            # frame2 = frame_to_png(frame)
             if self.mqtt_enabled:
                 Thread(
-                    target=self.publish_message, args=(label, png_image, frame2, data)
+                    target=self.publish_message, args=(label, face, frame, data)
                 ).start()
 
         return
@@ -278,11 +278,11 @@ class QtCapture(QWidget):
                 )
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
-                png_image = frame_to_png(face)
-                frame2 = frame_to_png(frame)
+                #png_image = frame_to_png(face)
+                #frame2 = frame_to_png(frame)
                 if self.mqtt_enabled:
                     Thread(
-                        target=self.publish_message, args=(label, png_image, frame2, data)
+                        target=self.publish_message, args=(label, face, frame, data)
                     ).start()
         return
 
