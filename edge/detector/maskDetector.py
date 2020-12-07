@@ -402,6 +402,11 @@ class QtCapture(QWidget):
         if THERMAL_ACTIVE:
             self._flir.start()
 
+        # mqtt client
+        if self.mqtt_enabled:
+            self.mqtt_client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE)
+
+
         # (1) load face detection model(yoloface)
         logging.info("Loading face detection model")
         if FLAGS.use_yoloface:
