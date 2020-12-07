@@ -21,7 +21,7 @@ modules:
 '''
 
 import traceback
-from time import time, ctime, sleep
+from time import time, ctime, sleep, localtime
 import cv2
 import numpy as np
 
@@ -181,7 +181,7 @@ class PureThermalCapture:
             sleep(1)
 
         _,rgb = self.cap.read()
-        ts = time()
+        ts = localtime()
         array_pointer = cast(frame.contents.data, POINTER(c_uint16 * (frame.contents.width * frame.contents.height)))
         data = np.frombuffer(
             array_pointer.contents, dtype=np.dtype(np.uint16)
@@ -216,7 +216,7 @@ def raw_to_8bit(data):
 # Draw temperature measurement on image
 def display_temperature(img, val_k, loc, color):
     val = ktof(val_k)
-    cv2.putText(img,"{0:.1f} degF".format(val), loc, cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
+    cv2.putText(img,"{0:.1f} F".format(val), loc, cv2.FONT_HERSHEY_SIMPLEX, 0.75, color, 2)
     x, y = loc
     cv2.line(img, (x - 2, y), (x + 2, y), color, 1)
     cv2.line(img, (x, y - 2), (x, y + 2), color, 1)
