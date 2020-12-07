@@ -93,6 +93,11 @@ class QtCapture(QWidget):
             self.setFixedSize(640,480)
 
         self._selected_mask_model = mask_model
+
+            self.mqtt_enabled = enable_mqtt
+        if self.mqtt_enabled:
+            self.mqtt_client = mqtt.Client()
+        
         self._model_loaded = self.loadResources()
         
         if FLAGS.use_yoloface:
@@ -101,11 +106,6 @@ class QtCapture(QWidget):
             )  # multiple face detection
         else:
             self.face_detection_fn = self.detect_face_default  # only one face
-        
-        self.mqtt_enabled = enable_mqtt
-        if self.mqtt_enabled:
-            self.mqtt_client = mqtt.Client()
-            logging.info('Connected to mqtt broker')
         
         self.message_count = 0
 
@@ -436,7 +436,7 @@ class QtCapture(QWidget):
 class MaskDetector(QtWidgets.QMainWindow):
     """MainWindow class"""
 
-    def __init__(self):
+    def __init__(self, mqtt_enabled=True):
         super().__init__()
         if THERMAL_ACTIVE:
             self.setupUI(widthMult=1.7)
