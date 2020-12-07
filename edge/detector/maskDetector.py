@@ -278,6 +278,9 @@ class QtCapture(QWidget):
 
         color = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
+        display_temperature(color, data['maxVal'], data['maxLoc'], (0, 0, 255))  # add max temp
+        draw_str(color, (10,20), f'{ctime(data['ts'])}')   # add timestamp
+        
         if THERMAL_ACTIVE:
             color = np.hstack((color, data['frame']))
             width = 1200
