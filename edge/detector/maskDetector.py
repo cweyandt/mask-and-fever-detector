@@ -521,12 +521,12 @@ class MaskDetector(QtWidgets.QMainWindow):
             self.widthMult=1.7
             self._capture_widget.widthMult=1.7
             self._capture_widget.setFixedSize(1280,480)
-            self._ui.setupUi(widthMult=1.0)
+            self._ui.setupUi(self, widthMult=1.0)
         else:
             self.widthMult=1.0
             self._capture_widget.widthMult=1.0
             self._capture_widget.setFixedSize(640,480)
-            self._ui.setupUi(widthMult=1.0)
+            self._ui.setupUi(self, widthMult=1.0)
 
 
     def showAboutDialog(self):
