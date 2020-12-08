@@ -90,7 +90,8 @@ class QtCapture(QWidget):
         lay = QVBoxLayout()
         lay.addWidget(self.video_frame)
         self.setLayout(lay)
-        self.setFixedSize(640*self.widthMult,480)
+        self.width = 1280 if THERMAL_ACTIVE else 640
+        self.setFixedSize(self.width,480)
 
         self._selected_mask_model = mask_model
 
@@ -505,7 +506,7 @@ class MaskDetector(QtWidgets.QMainWindow):
 
         self._ui.checkBox_Mqtt.stateChanged.connect(self.toggleMqtt)
         # self._ui.checkBox_Stereo.stateChanged.connect(self.toggleStereo)
-        
+
         self._ui.menu_File.triggered.connect(self.closeEvent)
         self._ui.menu_About.triggered.connect(self.showAboutDialog)
         self._ui.pushButton_update.clicked.connect(self.updateModel)
