@@ -90,7 +90,7 @@ class QtCapture(QWidget):
         lay = QVBoxLayout()
         lay.addWidget(self.video_frame)
         self.setLayout(lay)
-        self.setFixedSize(640*widthMult,480)
+        self.setFixedSize(640*self.widthMult,480)
 
         self._selected_mask_model = mask_model
 
@@ -520,12 +520,12 @@ class MaskDetector(QtWidgets.QMainWindow):
         if self._ui.checkBox_Stereo.isChecked():
             self.widthMult=1.7
             self._capture_widget.widthMult=1.7
-            self._capture_widget.setFixedSize(640*widthMult,480)
+            self._capture_widget.setFixedSize(640*self.widthMult,480)
             self.setupUI(self)
         else:
             self.widthMult=1.0
-            self._capture_widget.widthMult=1.7
-            self._capture_widget.setFixedSize(640*widthMult,480)
+            self._capture_widget.widthMult=1.0
+            self._capture_widget.setFixedSize(640*self.widthMult,480)
             self.setupUI(self)
 
 
