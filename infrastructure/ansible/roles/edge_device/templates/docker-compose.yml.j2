@@ -8,6 +8,7 @@ services:
     volumes:
       - "/dev:/dev"
       - "/tmp:/tmp"
+      - "/etc/localtime:/etc/localtime"
     privileged: true
     stdin_open: true
     tty: true
