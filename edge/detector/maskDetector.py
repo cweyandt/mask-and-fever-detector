@@ -86,13 +86,11 @@ class QtCapture(QWidget):
         self._fps = fps
         self.video_frame = QLabel()
         self.video_frame
+        self.widthMult = 1.0
         lay = QVBoxLayout()
         lay.addWidget(self.video_frame)
         self.setLayout(lay)
-        if THERMAL_ACTIVE:
-            self.setFixedSize(1280,480)
-        else:
-            self.setFixedSize(640,480)
+        self.setFixedSize(640*widthMult,480)
 
         self._selected_mask_model = mask_model
 
@@ -506,9 +504,30 @@ class MaskDetector(QtWidgets.QMainWindow):
         self._ui.pushButton_StopMqtt.clicked.connect(self._capture_widget.stopMqtt)
         self._ui.comboBox_model.currentTextChanged.connect(self._capture_widget.updateModel)
 
+        self._ui.checkBox_Mqtt.stateChanged.connect(self._capture_widget.toggleMqtt)
+        self._ui.checkBox_Stereo.stateChanged.connect(self._capture_widget.toggleStereo)
         self._ui.menu_File.triggered.connect(self.closeEvent)
         self._ui.menu_About.triggered.connect(self.showAboutDialog)
         self._ui.pushButton_update.clicked.connect(self.updateModel)
+
+    def toggleMqtt(self):
+        if self._ui.checkBox_Mqtt.isChecked():
+            self.startMqtt()
+        else:
+            self.stopMqtt() 
+
+    def toggleStereo(self):
+        if self._ui.checkBox_Stereo.isChecked():
+            self.widthMult=1.7
+            self._capture_widget.widthMult=1.7
+            self._capture_widget.setFixedSize(640*widthMult,480)
+            self.setupUI(self)
+        else:
+            self.widthMult=1.0
+            self._capture_widget.widthMult=1.7
+            self._capture_widget.setFixedSize(640*widthMult,480)
+            self.setupUI(self)
+
 
     def showAboutDialog(self):
         """show dialog"""
