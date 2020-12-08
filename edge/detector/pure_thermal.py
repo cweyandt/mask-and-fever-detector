@@ -243,10 +243,10 @@ def display_temperature(img, val_k, loc, color):
     cv2.line(img, (x, y - 2), (x, y + 2), color, 1)
 
 # Draw string on image
-def draw_str(dst, target, s, fontScale=1.0, color=(0,0,0)):
+def draw_str(dst, target, s, fontScale=1.0, color=(255,255,255)):
     x, y = target
-    cv2.putText(dst, s, (x+1, y+1), cv2.FONT_HERSHEY_PLAIN, fontScale, color, thickness = 2, lineType=cv2.LINE_AA)
-    cv2.putText(dst, s, (x, y), cv2.FONT_HERSHEY_PLAIN, fontScale, (255, 255, 255), lineType=cv2.LINE_AA)
+    cv2.putText(dst, s, (x+1, y+1), cv2.FONT_HERSHEY_PLAIN, fontScale, (0,0,0), thickness = 2, lineType=cv2.LINE_AA)
+    cv2.putText(dst, s, (x, y), cv2.FONT_HERSHEY_PLAIN, fontScale, color, lineType=cv2.LINE_AA)
 
 # Test function
 if __name__ == '__main__':

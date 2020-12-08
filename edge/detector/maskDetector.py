@@ -158,10 +158,10 @@ class QtCapture(QWidget):
             color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
 
             # include the probability in the label
-            label_img = "{}: {:.2f}%".format(label_img, max(mask, withoutMask) * 100)
+            label_img = "{}: {:.0f}%".format(label_img, max(mask, withoutMask) * 100)
 
             # display the label and bounding box rectangle on the output frame
-            draw_str(frame, (startX, startY - 10), label_img, fontScale=1.1, color=color)
+            draw_str(frame, (startX-10, startY-10), label_img, fontScale=1.3, color=color)
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
         if THERMAL_ACTIVE:
@@ -252,11 +252,11 @@ class QtCapture(QWidget):
                 color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
 
                 # include the probability in the label
-                label_img = "{}: {:.2f}%".format(label_img, max(mask, withoutMask) * 100)
+                label_img = "{}: {:.0f}%".format(label_img, max(mask, withoutMask) * 100)
 
                 # display the label and bounding box rectangle on the output
                 # frame
-                draw_str(frame, (startX, startY - 10), label_img, fontScale=1.1, color=color)
+                draw_str(frame, (startX-10, startY-10), label_img, fontScale=1.3, color=color)
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
             if THERMAL_ACTIVE:
