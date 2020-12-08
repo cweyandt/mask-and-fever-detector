@@ -161,7 +161,7 @@ class QtCapture(QWidget):
             label_img = "{}: {:.0f}%".format(label_img, max(mask, withoutMask) * 100)
 
             # display the label and bounding box rectangle on the output frame
-            draw_str(frame, (startX-10, startY-10), label_img, fontScale=1.3, color=color)
+            draw_str(frame, (startX-10, startY-10), label_img, fontScale=1.5, color=color)
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
         if THERMAL_ACTIVE:
@@ -256,7 +256,7 @@ class QtCapture(QWidget):
 
                 # display the label and bounding box rectangle on the output
                 # frame
-                draw_str(frame, (startX-10, startY-10), label_img, fontScale=1.3, color=color)
+                draw_str(frame, (startX-10, startY-10), label_img, fontScale=1.5, color=color)
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
             if THERMAL_ACTIVE:
@@ -374,6 +374,14 @@ class QtCapture(QWidget):
         self._model_loaded = False
         self._selected_mask_model = text
 
+    def startMqtt():
+        if self.mqtt_enabled:
+            self.mqtt_client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE)
+
+    def stopMqtt():
+        if self.mqtt_enabled:
+            self.mqtt_client.disconnect()
+    
     def loadResources(self):
         """Load models & other resources"""
         
@@ -396,8 +404,7 @@ class QtCapture(QWidget):
 
         # mqtt client
         if self.mqtt_enabled:
-            self.mqtt_client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE)
-
+            self.startMqtt()
 
         # (1) load face detection model(yoloface)
         logging.info("Loading face detection model")
@@ -495,6 +502,8 @@ class MaskDetector(QtWidgets.QMainWindow):
         # link events
         self._ui.pushButton_StartCapture.clicked.connect(self._capture_widget.start)
         self._ui.pushButton_StopCapture.clicked.connect(self._capture_widget.stop)
+        self._ui.pushButton_StartMqtt.clicked.connect(self._capture_widget.startMqtt)
+        self._ui.pushButton_StopMqtt.clicked.connect(self._capture_widget.stopMqtt)
         self._ui.comboBox_model.currentTextChanged.connect(self._capture_widget.updateModel)
 
         self._ui.menu_File.triggered.connect(self.closeEvent)
