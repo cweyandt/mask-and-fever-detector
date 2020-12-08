@@ -161,16 +161,7 @@ class QtCapture(QWidget):
             label_img = "{}: {:.2f}%".format(label_img, max(mask, withoutMask) * 100)
 
             # display the label and bounding box rectangle on the output frame
-            cv2.putText(
-                frame,
-                label_img,
-                (startX, startY - 10),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                color,
-                thickness=3,
-                lineType=cv2.LINE_AA
-            )
+            draw_str(frame, (startX, startY - 10), label_img, fontScale=1.1, color=color)
             cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
         if THERMAL_ACTIVE:
@@ -265,16 +256,7 @@ class QtCapture(QWidget):
 
                 # display the label and bounding box rectangle on the output
                 # frame
-                cv2.putText(
-                    frame,
-                    label_img,
-                    (startX, startY - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0,
-                    color,
-                    thickness=3,
-                    lineType=cv2.LINE_AA
-                )
+                draw_str(frame, (startX, startY - 10), label_img, fontScale=1.1, color=color)
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
             if THERMAL_ACTIVE:
