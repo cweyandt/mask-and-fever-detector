@@ -363,6 +363,9 @@ class QtCapture(QWidget):
 
         if not self._model_loaded:
             self.loadResources()
+
+        if THERMAL_ACTIVE and not self._flir.running:
+            self._flir.start()
         
         logging.info("Creating timer")    
         self.timer = QTimer()
@@ -379,7 +382,7 @@ class QtCapture(QWidget):
 
     def deleteLater(self):
         if THERMAL_ACTIVE:
-            self._flir.stop()
+            self._flir.close()
         else:
             self.cap.release()
         super(QWidget, self).deleteLater()

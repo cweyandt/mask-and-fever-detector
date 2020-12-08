@@ -92,36 +92,51 @@ class PureThermalCapture:
 
     def start(self):
         # Open communications to the PureThermal I/O board
-        try:
-            self.res = libuvc.uvc_open(self.dev, byref(self.devh))
-            if self.res < 0:
-                logging.error("uvc_open error")
-                exit(1)
+        if not self.running:
+            try:
+                self.res = libuvc.uvc_open(self.dev, byref(self.devh))
+                if self.res < 0:
+                    logging.error("uvc_open error")
+                    exit(1)
 
-            logging.info("device opened!")
-            sleep(2)
-            print_device_info(self.devh)
-            print_device_formats(self.devh)
+                logging.info("device opened!")
+                sleep(2)
+                print_device_info(self.devh)
+                print_device_formats(self.devh)
 
-            frame_formats = uvc_get_frame_formats_by_guid(self.devh, VS_FMT_GUID_Y16)
-            if len(frame_formats) == 0:
-                logging.error("device does not support Y16")
-                exit(1)
+                frame_formats = uvc_get_frame_formats_by_guid(self.devh, VS_FMT_GUID_Y16)
+                if len(frame_formats) == 0:
+                    logging.error("device does not support Y16")
+                    exit(1)
 
-            libuvc.uvc_get_stream_ctrl_format_size(self.devh, byref(self.ctrl), UVC_FRAME_FORMAT_Y16,
-                frame_formats[0].wWidth, frame_formats[0].wHeight, int(1e7 / frame_formats[0].dwDefaultFrameInterval)
-                )
+                libuvc.uvc_get_stream_ctrl_format_size(self.devh, byref(self.ctrl), UVC_FRAME_FORMAT_Y16,
+                    frame_formats[0].wWidth, frame_formats[0].wHeight, int(1e7 / frame_formats[0].dwDefaultFrameInterval)
+                    )
+                self.stream()
+            except:
+                logging.error("Error initializing UVC stream")
+        else:
+            logging.warning("UVC stream already initialized")
+            self.stream()
 
-            # Start uvc streaming thread, which calls py_frame_callback after each capture
-            self.res = libuvc.uvc_start_streaming(self.devh, byref(self.ctrl), self.PTR_PY_FRAME_CALLBACK, None, 0)
-            if self.res < 0:
-                logging.error("uvc_start_streaming failed: {0}".format(self.res))
-                exit(1)
-            else:
-                self.running = True
-                logging.info("PureThermal streaming started.")
-        except:
-            logging.error("Error starting UVC stream")
+
+
+    def stream(self):
+        # Start uvc streaming thread, which calls py_frame_callback after each capture
+        if not self.running:
+            try:
+                self.res = libuvc.uvc_start_streaming(self.devh, byref(self.ctrl), self.PTR_PY_FRAME_CALLBACK, None, 0)
+                if self.res < 0:
+                    logging.error("uvc_start_streaming failed: {0}".format(self.res))
+                    self.running = False
+                    exit(1)
+                else:
+                    self.running = True
+                    logging.info("PureThermal streaming started.")
+            except:
+                logging.error("Error starting UVC stream")
+        else:
+            logging.warning("UVC stream already active")
 
             
 
@@ -160,21 +175,27 @@ class PureThermalCapture:
         draw_str(img, (10,20), ts)   # add timestamp
         
         # save a copy of every n frames
-        n = 10
-        if self.idx % n == 0:
-            cv2.imwrite(f'output/purethermal{self.idx}.png',np.hstack((img, rgb)))
-            logging.info(f'writing file /output/purethermal{self.idx}.png')
+        # n = 10
+        # if self.idx % n == 0:
+        #     cv2.imwrite(f'output/purethermal{self.idx}.png',np.hstack((img, rgb)))
+        #     logging.info(f'writing file /output/purethermal{self.idx}.png')
 
         # print("Returning PureThermal image with timestamp: " + ts)    
         return dict({'ts':data['ts'], 'frame':img, 'thermal':frame, 'rgb':rgb, 'maxVal':maxVal, 'maxLoc':maxLoc})
 
     def stop(self):
         libuvc.uvc_stop_streaming(self.devh)
+        self.running = False
         logging.info("Stopped streaming from PureThermal2")
+        return 
+
+    def close(self):
+        libuvc.uvc_stop_streaming(self.devh)
+        self.running = False
+        logging.info("Stopped streaming from PureThermal2 - Closing connection...")
         libuvc.uvc_unref_device(self.dev)
         libuvc.uvc_exit(self.ctx)
         return 
-
 
     def py_frame_callback(self, frame, userptr):
         while not self.cap.isOpened():
