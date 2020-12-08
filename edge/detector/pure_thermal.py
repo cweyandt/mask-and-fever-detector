@@ -21,7 +21,7 @@ modules:
 '''
 
 import traceback
-from time import time, ctime, sleep, localtime
+from time import time, ctime, sleep, localtime, asctime
 import cv2
 import numpy as np
 
