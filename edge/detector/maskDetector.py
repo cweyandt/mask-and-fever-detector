@@ -504,17 +504,17 @@ class MaskDetector(QtWidgets.QMainWindow):
         self._ui.pushButton_StopMqtt.clicked.connect(self._capture_widget.stopMqtt)
         self._ui.comboBox_model.currentTextChanged.connect(self._capture_widget.updateModel)
 
-        self._ui.checkBox_Mqtt.stateChanged.connect(self._capture_widget.toggleMqtt)
-        self._ui.checkBox_Stereo.stateChanged.connect(self._capture_widget.toggleStereo)
+        self._ui.checkBox_Mqtt.stateChanged.connect(self.toggleMqtt)
+        self._ui.checkBox_Stereo.stateChanged.connect(self.toggleStereo)
         self._ui.menu_File.triggered.connect(self.closeEvent)
         self._ui.menu_About.triggered.connect(self.showAboutDialog)
         self._ui.pushButton_update.clicked.connect(self.updateModel)
 
     def toggleMqtt(self):
         if self._ui.checkBox_Mqtt.isChecked():
-            self.startMqtt()
+            self._capture_widget.startMqtt()
         else:
-            self.stopMqtt() 
+            self._capture_widget.stopMqtt() 
 
     def toggleStereo(self):
         if self._ui.checkBox_Stereo.isChecked():
