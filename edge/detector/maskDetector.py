@@ -321,7 +321,7 @@ class QtCapture(QWidget):
                 "detection_type": detection_type,
                 "image_encoding": "png",
                 "frame": b64encode(full_frame).decode(),
-                "full_frame": b64encode("").decode(),
+                "full_frame": "",
                 "thermal_frame": b64encode(data['frame']).decode(),
                 "thermal_data": b64encode(data['thermal']).decode(),
                 "timestamp": data['ts'],
