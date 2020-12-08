@@ -48,7 +48,7 @@ class Ui_MainWindow(object):
         # self.horizontalLayout_2.addWidget(self.pushButton_StartMqtt)
         # self.pushButton_StopMqtt = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         # self.pushButton_StopMqtt.setObjectName("pushButton_StopMqtt")
-        self.horizontalLayout_2.addWidget(self.pushButton_StopMqtt)
+        # self.horizontalLayout_2.addWidget(self.pushButton_StopMqtt)
         self.pushButton_update = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         self.pushButton_update.setObjectName("pushButton_update")
         self.horizontalLayout_2.addWidget(self.pushButton_update)
