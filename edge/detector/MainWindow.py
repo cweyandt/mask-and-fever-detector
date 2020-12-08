@@ -34,14 +34,6 @@ class Ui_MainWindow(object):
         self.pushButton_StopCapture = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         self.pushButton_StopCapture.setObjectName("pushButton_StopCapture")
         self.horizontalLayout_2.addWidget(self.pushButton_StopCapture)
-        
-        self.checkBox_Mqtt = QtWidgets.QCheckBox(self.horizontalLayoutWidget_2)
-        self.checkBox_Mqtt.setObjectName("checkBox_Mqtt")
-        self.horizontalLayout_2.addWidget(self.checkBox_Mqtt)
-
-        # self.checkBox_Stereo = QtWidgets.QCheckBox(self.horizontalLayoutWidget_2)
-        # self.checkBox_Stereo.setObjectName("checkBox_Stereo")
-        # self.horizontalLayout_2.addWidget(self.checkBox_Stereo)
 
         # self.pushButton_StartMqtt = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         # self.pushButton_StartMqtt.setObjectName("pushButton_StartMqtt")
@@ -52,6 +44,12 @@ class Ui_MainWindow(object):
         self.pushButton_update = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
         self.pushButton_update.setObjectName("pushButton_update")
         self.horizontalLayout_2.addWidget(self.pushButton_update)
+        self.checkBox_Mqtt = QtWidgets.QCheckBox(self.horizontalLayoutWidget_2)
+        self.checkBox_Mqtt.setObjectName("checkBox_Mqtt")
+        # self.checkBox_Stereo = QtWidgets.QCheckBox(self.horizontalLayoutWidget_2)
+        # self.checkBox_Stereo.setObjectName("checkBox_Stereo")
+        # self.horizontalLayout_2.addWidget(self.checkBox_Stereo)
+        self.horizontalLayout_2.addWidget(self.checkBox_Mqtt)
         self.verticalLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(20, 70, 691*widthMult, 431))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
