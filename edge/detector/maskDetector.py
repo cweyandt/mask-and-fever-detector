@@ -86,7 +86,7 @@ class QtCapture(QWidget):
         self._fps = fps
         self.video_frame = QLabel()
         self.video_frame
-        self.widthMult = 1.0
+        self.widthMult = 1.7
         lay = QVBoxLayout()
         lay.addWidget(self.video_frame)
         self.setLayout(lay)
@@ -314,8 +314,7 @@ class QtCapture(QWidget):
     def publish_message(self, detection_type, face_frame, full_frame, data=None):
         self.message_count += 1
         logging.debug("publishing message %d to mqtt", self.message_count)
-        # topic = f"{detection_type}/png"
-        # self.mqtt_client.publish(topic, frame)
+
         if THERMAL_ACTIVE:
             msg = {
                 "detection_type": detection_type,
@@ -435,7 +434,7 @@ class MaskDetector(QtWidgets.QMainWindow):
 
     def __init__(self, mqtt_enabled=True):
         super().__init__()
-        self.widthMult = 1
+        self.widthMult = 1.7
         self.setupUI()
 
     def updateModel(self):
@@ -500,12 +499,13 @@ class MaskDetector(QtWidgets.QMainWindow):
         # link events
         self._ui.pushButton_StartCapture.clicked.connect(self._capture_widget.start)
         self._ui.pushButton_StopCapture.clicked.connect(self._capture_widget.stop)
-        self._ui.pushButton_StartMqtt.clicked.connect(self._capture_widget.startMqtt)
-        self._ui.pushButton_StopMqtt.clicked.connect(self._capture_widget.stopMqtt)
+        # self._ui.pushButton_StartMqtt.clicked.connect(self._capture_widget.startMqtt)
+        # self._ui.pushButton_StopMqtt.clicked.connect(self._capture_widget.stopMqtt)
         self._ui.comboBox_model.currentTextChanged.connect(self._capture_widget.updateModel)
 
         self._ui.checkBox_Mqtt.stateChanged.connect(self.toggleMqtt)
-        self._ui.checkBox_Stereo.stateChanged.connect(self.toggleStereo)
+        # self._ui.checkBox_Stereo.stateChanged.connect(self.toggleStereo)
+        
         self._ui.menu_File.triggered.connect(self.closeEvent)
         self._ui.menu_About.triggered.connect(self.showAboutDialog)
         self._ui.pushButton_update.clicked.connect(self.updateModel)
@@ -516,17 +516,17 @@ class MaskDetector(QtWidgets.QMainWindow):
         else:
             self._capture_widget.stopMqtt() 
 
-    def toggleStereo(self):
-        if self._ui.checkBox_Stereo.isChecked():
-            self.widthMult=1.7
-            self._capture_widget.widthMult=1.7
-            self._capture_widget.setFixedSize(1280,480)
-            self._ui.setupUi(self, widthMult=1.0)
-        else:
-            self.widthMult=1.0
-            self._capture_widget.widthMult=1.0
-            self._capture_widget.setFixedSize(640,480)
-            self._ui.setupUi(self, widthMult=1.0)
+    # def toggleStereo(self):
+    #     if self._ui.checkBox_Stereo.isChecked():
+    #         self.widthMult=1.7
+    #         self._capture_widget.widthMult=1.7
+    #         self._capture_widget.setFixedSize(1280,480)
+    #         self._ui.setupUi(self, widthMult=1.0)
+    #     else:
+    #         self.widthMult=1.0
+    #         self._capture_widget.widthMult=1.0
+    #         self._capture_widget.setFixedSize(640,480)
+    #         self._ui.setupUi(self, widthMult=1.0)
 
 
     def showAboutDialog(self):
