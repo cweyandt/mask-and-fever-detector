@@ -166,7 +166,7 @@ class QtCapture(QWidget):
                 label_img,
                 (startX, startY - 10),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                1.5,
+                1.0,
                 color,
                 thickness=3,
                 lineType=cv2.LINE_AA
@@ -270,7 +270,7 @@ class QtCapture(QWidget):
                     label_img,
                     (startX, startY - 10),
                     cv2.FONT_HERSHEY_SIMPLEX,
-                    1.5,
+                    1.0,
                     color,
                     thickness=3,
                     lineType=cv2.LINE_AA
@@ -375,7 +375,7 @@ class QtCapture(QWidget):
     def stop(self):
         """Stop capturing data """
         if THERMAL_ACTIVE:
-            self._flir.stop()
+            #self._flir.stop()
         else:
             self.cap.release()
         self.timer.stop()
@@ -409,7 +409,7 @@ class QtCapture(QWidget):
             self.cap = cv2.VideoCapture(CAMERA_INDEX)
 
         # PureThermal2 FLIR capture
-        if THERMAL_ACTIVE:
+        if THERMAL_ACTIVE and not self._flir.running:
             self._flir.start()
 
         # mqtt client
@@ -448,10 +448,8 @@ class MaskDetector(QtWidgets.QMainWindow):
 
     def __init__(self, mqtt_enabled=True):
         super().__init__()
-        if THERMAL_ACTIVE:
-            self.setupUI(widthMult=1.7)
-        else:
-            self.setupUI(widthMult=1)
+        self.widthMult = 1.7 if THERMAL_ACTIVE else 1
+        self.setupUI()
 
     def updateModel(self):
         new_model_map = get_model_list()
@@ -499,17 +497,17 @@ class MaskDetector(QtWidgets.QMainWindow):
             self._mask_models = modelList
             self._ui.comboBox_model.addItems(list(self._mask_models.keys()))
 
-    def setupUI(self, widthMult=1):
+    def setupUI(self):
         """setup UI"""
         logging.info(f"Loading UI..")
         self._ui = Ui_MainWindow()
-        self._ui.setupUi(self, widthMult=widthMult)
+        self._ui.setupUi(self, widthMult=self.widthMult)
 
         self.setWindowTitle("Mask Detector")
         self.populateCombobox()
         self._capture_widget = QtCapture(mainwindow=self, mask_model=self._ui.comboBox_model.currentText())
         self._ui.verticalLayout.addChildWidget(self._capture_widget)
-        self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH*widthMult, DEFAULT_MAIN_WINDOW_HEIGHT)
+        self.setFixedSize(DEFAULT_MAIN_WINDOW_WIDTH*self.widthMult, DEFAULT_MAIN_WINDOW_HEIGHT)
         self._ui.menubar.setVisible(True)
 
         # link events
