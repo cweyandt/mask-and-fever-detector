@@ -361,8 +361,8 @@ class QtCapture(QWidget):
     def start(self):
         """Start capturing data by setting up timer"""
 
-        if not self._model_loaded:
-            self.loadResources()
+        # if not self._model_loaded:
+        #     self.loadResources()
 
         if THERMAL_ACTIVE and not self._flir.running:
             self._flir.start()
@@ -396,7 +396,7 @@ class QtCapture(QWidget):
         """Load models & other resources"""
         
         # Check .env to see if FLIR camera is used
-        if THERMAL_ACTIVE:
+        if THERMAL_ACTIVE and not PureThermalCapture.alive:
             try:
                 logging.info("Attempting PureThermal connection")
                 self._flir = PureThermalCapture(cameraID=CAMERA_INDEX)
