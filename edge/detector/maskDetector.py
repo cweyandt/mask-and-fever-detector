@@ -374,11 +374,11 @@ class QtCapture(QWidget):
         self._model_loaded = False
         self._selected_mask_model = text
 
-    def startMqtt():
+    def startMqtt(self):
         if self.mqtt_enabled:
             self.mqtt_client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE)
 
-    def stopMqtt():
+    def stopMqtt(self):
         if self.mqtt_enabled:
             self.mqtt_client.disconnect()
     
