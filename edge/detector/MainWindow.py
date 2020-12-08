@@ -36,11 +36,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.addWidget(self.pushButton_StopCapture)
         
         self.checkBox_Mqtt = QtWidgets.QCheckBox(self.horizontalLayoutWidget_2)
-        self.checkBox_Mqtt.setObjectName("MQTT")
+        self.checkBox_Mqtt.setObjectName("checkBox_Mqtt")
         self.horizontalLayout_2.addWidget(self.checkBox_Mqtt)
 
         self.checkBox_Stereo = QtWidgets.QCheckBox(self.horizontalLayoutWidget_2)
-        self.checkBox_Stereo.setObjectName("Stereo View")
+        self.checkBox_Stereo.setObjectName("checkBox_Stereo")
         self.horizontalLayout_2.addWidget(self.checkBox_Stereo)
 
         self.pushButton_StartMqtt = QtWidgets.QPushButton(self.horizontalLayoutWidget_2)
@@ -112,6 +112,8 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "Realtime COVID-19 Mask Detector - DR.SanFranDisco"))
         self.pushButton_StartCapture.setText(_translate("MainWindow", "Start Detection"))
         self.pushButton_StopCapture.setText(_translate("MainWindow", "Stop Detection"))
+        self.checkBox_Mqtt.setText(_translate("MainWindow", "MQTT"))
+        self.checkBox_Stereo.setText(_translate("MainWindow", "Stereo Viewer"))
         self.pushButton_StartMqtt.setText(_translate("MainWindow", "Start Exporting"))
         self.pushButton_StopMqtt.setText(_translate("MainWindow", "Stop Exporting"))
         self.pushButton_update.setText(_translate("MainWindow", "Update Model"))
