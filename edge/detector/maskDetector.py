@@ -373,11 +373,11 @@ class QtCapture(QWidget):
         self.timer.start(1000.0 / self._fps)
 
     def stop(self):
-        """Stop capturing data """
-        if THERMAL_ACTIVE:
-            #self._flir.stop()
-        else:
-            self.cap.release()
+        """Stop processing data """
+        # if THERMAL_ACTIVE:
+        #     self._flir.stop()
+        # else:
+        #     self.cap.release()
         self.timer.stop()
 
     def deleteLater(self):
