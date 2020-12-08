@@ -171,7 +171,7 @@ class QtCapture(QWidget):
         if len(faces) > 0 and self.mqtt_enabled:
             frame = frame_to_png(frame)
             Thread(
-                target=self.publish_message, args=(label, frame, frame, data)
+                target=self.publish_message, args=(label, frame, data)
             ).start()
 
         return len(faces)
@@ -266,7 +266,7 @@ class QtCapture(QWidget):
             if self.mqtt_enabled:
                 frame = frame_to_png(frame)
                 Thread(
-                    target=self.publish_message, args=(label, frame, frame, data)
+                    target=self.publish_message, args=(label, frame, data)
                 ).start()
 
         return len(faces)
@@ -312,7 +312,7 @@ class QtCapture(QWidget):
         pix = QPixmap.fromImage(img)
         self.video_frame.setPixmap(pix)
 
-    def publish_message(self, detection_type, face_frame, full_frame, data=None):
+    def publish_message(self, detection_type, full_frame, data=None):
         self.message_count += 1
         logging.debug("publishing message %d to mqtt", self.message_count)
 
@@ -320,7 +320,7 @@ class QtCapture(QWidget):
             msg = {
                 "detection_type": detection_type,
                 "image_encoding": "png",
-                "frame": b64encode(face_frame).decode(),
+                "frame": "",
                 "full_frame": b64encode(full_frame).decode(),
                 "thermal_frame": b64encode(data['frame']).decode(),
                 "thermal_data": b64encode(data['thermal']).decode(),

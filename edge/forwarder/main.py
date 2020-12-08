@@ -88,7 +88,7 @@ def on_connect_remote(client, userdata, flags, rc):
 def on_message(client, userdata, message):
     remote_mqttclient.connect(
                 REMOTE_MQTT_HOST, REMOTE_MQTT_PORT, MQTT_KEEPALIVE
-            )
+            )  # TODO: Clean up this lazy reconnect hack
     msg = json.loads(str(message.payload.decode("utf-8")))
     logging.debug("received message, detection_type=%s", msg["detection_type"])
     img = image_from_b64(msg["frame"])
