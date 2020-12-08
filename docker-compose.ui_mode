@@ -1,0 +1,34 @@
+---
+version: '2'
+services:
+  mask_detector:
+    image: imander/maskdetector:latest
+    devices:
+      - "/dev/video0:/dev/video0"   ### SET TO PROPER CAMERA INDEX
+    volumes:
+      - "/tmp:/tmp"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - mqtt_broker
+    environment:
+      DISPLAY: 
+      MQTT_URL: mqtt://user:password@mqtt_broker:1883
+      CAMERA_INDEX:  0    ### SET TO PROPER CAMERA INDEX
+      MQTT_TOPIC: mask-detector
+    command: ["./main.py", "maskDetector", "--log-level", "debug"]
+  mqtt_broker:
+    image: imander/mqtt-broker:latest
+    expose:
+      - "1883"
+  mqtt_forwarder:
+    image: imander/image-forwarder:latest
+    depends_on:
+      - mqtt_broker
+    environment:
+      LOG_LEVEL: DEBUG
+      LOCAL_MQTT_HOST: mqtt_broker
+      LOCAL_MQTT_PORT: 1883
+      REMOTE_MQTT_HOST: "0.0.0.0"
+      REMOTE_MQTT_PORT: 1883
+      MINIMUM_COMMUTATIVE_IMAGE_DIFF: 0.15
