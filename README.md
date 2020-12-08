@@ -42,7 +42,7 @@ Building for multiple architectures simultaneously requires more configuration t
 
 - Docker with buildx and experimental features enabled
 - A buildx environment that can build both x86 and arm images
-	`$ make setup-buildx`
+	`$ make buildx-setup`
 - A dockerhub account since build and push happens in a single step
 
 If all prerequisites are met, run the following command to build all images with x86 and ARM architectures and push to dockerhub.
