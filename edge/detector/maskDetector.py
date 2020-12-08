@@ -401,8 +401,8 @@ class QtCapture(QWidget):
             self._flir.start()
 
         # mqtt client
-        if self.mqtt_enabled:
-            self.startMqtt()
+        # if self.mqtt_enabled:
+        #     self.startMqtt()
 
         # (1) load face detection model(yoloface)
         logging.info("Loading face detection model")
