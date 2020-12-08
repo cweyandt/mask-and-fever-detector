@@ -314,11 +314,8 @@ class QtCapture(QWidget):
             )
 
         color = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-        ts = ctime(data['ts'])
-
         
-        draw_str(color, (10,20), f'{ts}')   # add timestamp
+        draw_str(color, (10,20), data['ts'])   # add timestamp
         
         if THERMAL_ACTIVE:
             # display_temperature(color, data['maxVal'], data['maxLoc'], COLOR_YELLOW)  # add max temp
