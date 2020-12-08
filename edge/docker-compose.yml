@@ -2,40 +2,39 @@
 version: '2'
 services:
   mask_detector:
-    image: {{ lookup('env','DOCKER_REPO') }}/maskdetector:latest
+    image: cweyandt/maskdetector:latest
     devices:
-      - "/dev/video{{ lookup('env','CAMERA_INDEX') }}:/dev/video{{ lookup('env','CAMERA_INDEX') }}"
+      - "/dev/video1:/dev/video1"
     volumes:
       - "/dev:/dev"
       - "/tmp:/tmp"
-      - "/etc/localtime:/etc/localtime"
     privileged: true
     stdin_open: true
     tty: true
     depends_on:
       - mqtt_broker
     environment:
-      DISPLAY: {{ lookup('env', 'DISPLAY') }}
+      DISPLAY: 
       MQTT_URL: mqtt://user:password@mqtt_broker:1883
-      CAMERA_INDEX:  {{ lookup('env','CAMERA_INDEX') }}
-      THERMAL_ACTIVE: {{ lookup('env','THERMAL_ACTIVE') }}
-      MQTT_TOPIC: {{ lookup('env','MQTT_TOPIC') }}
+      CAMERA_INDEX:  1
+      THERMAL_ACTIVE: 1
+      MQTT_TOPIC: mask-detector
     #command: ["./main.py", "maskDetector", "--noninteractive", "--log-level", "debug"]
     command: ["./main.py", "maskDetector", "--log-level", "debug"]
 
   mqtt_broker:
-    image: {{ lookup('env','DOCKER_REPO') }}/mqtt-broker:latest
+    image: cweyandt/mqtt-broker:latest
     expose:
       - "1883"
 
   mqtt_forwarder:
-    image: {{ lookup('env','DOCKER_REPO') }}/image-forwarder:latest
+    image: cweyandt/image-forwarder:latest
     depends_on:
       - mqtt_broker
     environment:
       LOG_LEVEL: DEBUG
       LOCAL_MQTT_HOST: mqtt_broker
       LOCAL_MQTT_PORT: 1883
-      REMOTE_MQTT_HOST: "{{ tfstate.outputs.image_server_public_ip.value }}"
+      REMOTE_MQTT_HOST: "34.210.77.165"
       REMOTE_MQTT_PORT: 1883
       MINIMUM_COMMUTATIVE_IMAGE_DIFF: 0.15

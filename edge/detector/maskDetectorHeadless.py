@@ -1,57 +1,53 @@
-from base64 import b64encode
-import logging
-import json
 import os
+import sys
+import json
+import logging
+from base64 import b64encode
 from threading import Thread
 
-from absl import flags
 import cv2
 import numpy as np
 import paho.mqtt.client as mqtt
 from tensorflow.keras.models import load_model
 
+from absl import flags
+
 from utils import *
+from pure_thermal import *
 
 # Get CAMERA_INDEX from environment, default to 0
 CAMERA_INDEX = int(os.getenv("CAMERA_INDEX", 0))
-FACE_MODEL = "model/deploy.prototxt"
-FACE_MODEL_WEIGHTS = "model/res10_300x300_ssd_iter_140000.caffemodel"
-MASK_NET_MODEL = "model/mask_detector.model"
+# Check environment to see if Thermal Capture mode is ative
+if int(os.getenv("THERMAL_ACTIVE", 0 )) == 1:
+    THERMAL_ACTIVE = True
+else:
+    THERMAL_ACTIVE = False
+logging.info(f'THERMAL_ACTIVE = {THERMAL_ACTIVE}')
 
 MQTT_HOST = os.getenv("MQTT_HOST", "mqtt_broker")
 MQTT_TOPIC = os.getenv("MQTT_TOPIC", "mask-detector")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 MQTT_KEEPALIVE = int(os.getenv("MQTT_KEEPALIVE", 60))
 
-
-def adjust_box(w, h, box, change=0):
-    (startX, startY, endX, endY) = box.astype("int")
-    startX -= change
-    startY -= change
-    endX += change
-    endY += change
-
-    # ensure the bounding boxes fall within the dimensions of the frame
-    (startX, startY) = (max(0, startX), max(0, startY))
-    (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
-    return (startX, startY, endX, endY)
-
-
-def frame_to_png(frame):
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    return cv2.imencode(".png", gray)[1].tobytes()
+FACE_MODEL = "model/deploy.prototxt"
+FACE_MODEL_WEIGHTS = "model/res10_300x300_ssd_iter_140000.caffemodel"
+MASK_NET_MODEL = "model/mask_detector.model"
 
 
 class MaskDetector:
-    def __init__(self, fps=30, enable_mqtt=True):
+    def __init__(self, fps=30, enable_mqtt=True, flir=None):
+        
         self._fps = fps
         self._model_loaded = False
         self.mqtt_enabled = enable_mqtt
         if self.mqtt_enabled:
             self.mqtt_client = mqtt.Client()
+        self._flir = flir
         self._isReady = self.loadResources()
-        self.cap = cv2.VideoCapture(CAMERA_INDEX)
+        if not THERMAL_ACTIVE:
+            self.cap = cv2.VideoCapture(CAMERA_INDEX)
         self.message_count = 0
+        
 
     def setFPS(self, fps):
         """Adjust Frames Per Second"""
@@ -92,7 +88,7 @@ class MaskDetector:
             face = cv2.resize(face, (224, 224))
             yield face
 
-    def detect_masks(self, frame, display=False):
+    def detect_masks(self, frame, display=False, data=None):
         faces = []
         for face in self.detect_faces(frame):
             face_array = img_to_array(face)
@@ -110,25 +106,42 @@ class MaskDetector:
             label = "mask" if mask > withoutMask else "no_mask"
             logging.debug("detected label: %s" % label)
             png_image = frame_to_png(face)
-            full_image = frame_to_png(frame)
+            if THERMAL_ACTIVE:
+                full_image = frame_to_png(np.hstack((frame, data['frame'])))
+            else:
+                full_image = frame_to_png(frame)
             if display:
                 cv2.imshow("frame", face)
             if self.mqtt_enabled:
                 Thread(
-                    target=self.publish_message, args=(label, png_image, full_image)
+                    target=self.publish_message, args=(label, png_image, full_image, data)
                 ).start()
 
-    def publish_message(self, detection_type, face_frame, full_frame):
+    def publish_message(self, detection_type, face_frame, full_frame, data=None):
         self.message_count += 1
         logging.debug("publishing message %d to mqtt", self.message_count)
         # topic = f"{detection_type}/png"
         # self.mqtt_client.publish(topic, frame)
-        msg = {
-            "detection_type": detection_type,
-            "image_encoding": "png",
-            "frame": b64encode(face_frame).decode(),
-            "full_frame": b64encode(full_frame).decode(),
-        }
+        if THERMAL_ACTIVE:
+            msg = {
+                "detection_type": detection_type,
+                "image_encoding": "png",
+                "frame": b64encode(face_frame).decode(),
+                "full_frame": b64encode(full_frame).decode(),
+                "thermal_frame": b64encode(data['frame']).decode(),
+                "thermal_data": b64encode(data['thermal']).decode(),
+                "timestamp": data['ts'],
+                "maxVal": data['maxVal'],
+                "maxLoc": data['maxLoc'], 
+            }
+        else:
+            msg = {
+                "detection_type": detection_type,
+                "image_encoding": "png",
+                "frame": b64encode(face_frame).decode(),
+                "full_frame": b64encode(full_frame).decode(),
+            }
+
         self.mqtt_client.publish(MQTT_TOPIC, json.dumps(msg))
 
     def loadResources(self):
@@ -143,15 +156,25 @@ class MaskDetector:
         # mqtt client
         if self.mqtt_enabled:
             self.mqtt_client.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE)
+
+        # PureThermal2 FLIR capture
+        if THERMAL_ACTIVE:
+            self._flir.start()
         return True
 
     def run(self, display=False):
         while True:
             # Capture frame-by-frame
-            _, frame = self.cap.read()
+            if THERMAL_ACTIVE:
+                data = self._flir.get()
+                frame = data['rgb'] 
+            else:
+                data = None
+                _, frame = self.cap.read()
+
 
             try:
-                self.detect_masks(frame, display)
+                self.detect_masks(frame, display, data)
             # broad except here so that errors don't crash detection
             except Exception as e:
                 logging.error(
@@ -162,14 +185,29 @@ class MaskDetector:
                 break
 
         # When everything done, release the capture
-        self.cap.release()
-        cv2.destroyAllWindows()
+        if THERMAL_ACTIVE:
+            self._flir.stop()
+        else:
+            self.cap.release()
+            cv2.destroyAllWindows()
 
 
 def run(mqtt=True, display=False):
-    detector = MaskDetector(enable_mqtt=mqtt)
+    
+    # Check .env to see if FLIR camera is used
+    if THERMAL_ACTIVE:
+        try:
+            logging.info("Attempting PureThermal connection")
+            flir = PureThermalCapture(cameraID=CAMERA_INDEX)
+            detector = MaskDetector(enable_mqtt=mqtt, flir=flir)
+        except Exception as e:
+            logging.error(
+                    "error loading PureThermalCapture class: %s" % str(e), exc_info=True
+                )
+    else:
+        detector = MaskDetector(enable_mqtt=mqtt)
+    
     detector.run(display=display)
-
 
 if __name__ == "__main__":
     run()

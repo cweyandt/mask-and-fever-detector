@@ -13,6 +13,13 @@ export TF_VAR_key_name         := $(AWS_SSH_KEY_NAME)
 export TF_VAR_bucket_name      := $(AWS_S3_BUCKET_NAME)
 
 BUILDX   = docker buildx build --push --platform linux/amd64,linux/arm64 --build-arg REPO=$(DOCKER_REPO)
+BUILDX_edge   = docker buildx build --push --platform linux/arm64 --build-arg REPO=$(DOCKER_REPO)
+
+ifeq ($(THERMAL_ACTIVE),True)
+	export THERMAL_ACTIVE		   := 1
+else
+	export THERMAL_ACTIVE		   := 0
+endif
 
 ifeq ($(EDGE_ASK_PASS),True)
 	ASK_PASS = --ask-become-pass
@@ -21,8 +28,8 @@ endif
 $(VENV):
 	python3 -mvenv $(VENV) && pip install -r requirements.txt
 
-.PHONY: setup-buildx
-setup-buildx:
+.PHONY: buildx-setup
+buildx-setup:
 	docker buildx create --use --name build --node build --driver-opt network=host
 
 .PHONY: build-opencv
@@ -45,7 +52,7 @@ build-maskdetector:
 
 .PHONY: buildx-maskdetector
 buildx-maskdetector:
-	cd edge/detector && $(BUILDX) -t $(DOCKER_REPO)/maskdetector .
+	cd edge/detector && $(BUILDX_edge) -t $(DOCKER_REPO)/maskdetector .
 
 .PHONY: build-forwarder
 build-forwarder:
@@ -121,7 +128,7 @@ cloud-down:
 	cd infrastructure/terraform && \
 		terraform destroy -auto-approve --target=aws_instance.w251_image_server
 
-.PHONY: cloud-down
+.PHONY: cloud-down-all
 cloud-down-all:
 	cd infrastructure/terraform && terraform destroy -auto-approve
 

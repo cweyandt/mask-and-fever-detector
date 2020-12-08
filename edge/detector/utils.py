@@ -218,6 +218,22 @@ class FPS:
         # compute the (approximate) frames per second
         return self._num_frames / self.elapsed()
 
+def adjust_box(w, h, box, change=0):
+    (startX, startY, endX, endY) = box.astype("int")
+    startX -= change
+    startY -= change
+    endX += change
+    endY += change
+
+    # ensure the bounding boxes fall within the dimensions of the frame
+    (startX, startY) = (max(0, startX), max(0, startY))
+    (endX, endY) = (min(w - 1, endX), min(h - 1, endY))
+    return (startX, startY, endX, endY)
+
+
+def frame_to_png(frame):
+    # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    return cv2.imencode(".png", frame)[1].tobytes()
 
 def refined_box(left, top, width, height):
     right = left + width
