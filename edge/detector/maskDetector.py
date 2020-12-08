@@ -435,7 +435,7 @@ class MaskDetector(QtWidgets.QMainWindow):
 
     def __init__(self, mqtt_enabled=True):
         super().__init__()
-        self.widthMult = 1.7 if THERMAL_ACTIVE else 1
+        self.widthMult = 1
         self.setupUI()
 
     def updateModel(self):
@@ -521,12 +521,12 @@ class MaskDetector(QtWidgets.QMainWindow):
             self.widthMult=1.7
             self._capture_widget.widthMult=1.7
             self._capture_widget.setFixedSize(640*self.widthMult,480)
-            self.setupUI(self)
+            self.setupUI()
         else:
             self.widthMult=1.0
             self._capture_widget.widthMult=1.0
             self._capture_widget.setFixedSize(640*self.widthMult,480)
-            self.setupUI(self)
+            self.setupUI()
 
 
     def showAboutDialog(self):
